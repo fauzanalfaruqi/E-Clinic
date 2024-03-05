@@ -29,6 +29,7 @@ CREATE TABLE doctors (
 CREATE TABLE doctor_schedules (
   id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
   doctor_id uuid NOT NULL,
+  patient_id uuid NOT NULL,
   start_date timestamp NOT NULL,
   end_date timestamp NOT NULL,
   created_at timestamp DEFAULT CURRENT_TIMESTAMP,
@@ -106,6 +107,8 @@ CREATE TABLE bills (
 ALTER TABLE doctors ADD FOREIGN KEY (user_id) REFERENCES users (id);
 
 ALTER TABLE doctor_schedules ADD FOREIGN KEY (doctor_id) REFERENCES doctors (id);
+
+ALTER TABLE doctor_schedules ADD FOREIGN KEY (patient_id) REFERENCES patients (id);
 
 ALTER TABLE patients ADD FOREIGN KEY (user_id) REFERENCES users (id);
 
