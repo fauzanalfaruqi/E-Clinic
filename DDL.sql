@@ -2,14 +2,13 @@ CREATE DATABASE IF NOT EXISTS avenger_clinic;
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TYPE role AS ENUM ('ADMIN', 'DOCTOR', 'PATIENT');
+CREATE TYPE user_role AS ENUM ('ADMIN', 'DOCTOR', 'PATIENT');
 
 CREATE TABLE users (
   id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
   username varchar NOT NULL,
-  email varchar NOT NULL,
   password varchar NOT NULL,
-  role role NOT NULL,
+  role user_role NOT NULL,
   created_at timestamp DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp,
   deleted_at timestamp
