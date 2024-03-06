@@ -16,6 +16,7 @@ func NewMedicineDelivery(v1Group *gin.RouterGroup, medicineUC medicine.MedicineU
 	medicineGroup := v1Group.Group("/medicines")
 	{
 		medicineGroup.GET("/", handler.getAll)
+		medicineGroup.GET("/:id", handler.getById)
 	}
 }
 
@@ -25,4 +26,13 @@ func (m *medicineDelivery) getAll(ctx *gin.Context) {
 		json.NewResponseError(ctx, err.Error(), "01", "01")
 	}
 	json.NewResponseSuccess(ctx, getAll, "success", "01", "01")
+}
+
+func (m *medicineDelivery) getById(ctx *gin.Context) {
+	id := (ctx.Param("id"))
+	getById, err := m.medicineUC.GetById(id)
+	if err != nil {
+		json.NewResponseError(ctx, err.Error(), "01", "01")
+	}
+	json.NewResponseSuccess(ctx, getById, "success", "01", "01")
 }

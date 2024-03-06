@@ -28,7 +28,19 @@ func (m *medicineRepository) RetrieveAll() ([]dto.Medicine, error) {
 
 	}
 
-	return expenses, nil
+	return expenses, err
+}
+
+func (m *medicineRepository) RetrieveById(id string) ([]dto.Medicine, error) {
+	queryStatement := "SELECT * from medicines where id=$1 and deleted_at=null"
+	rows, err := m.db.Query(queryStatement, id)
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, err
+	}
+	defer rows.Close()
+	medicine, err := scan(rows)
+	return medicine, err
 }
 
 func scan(rows *sql.Rows) ([]dto.Medicine, error) {

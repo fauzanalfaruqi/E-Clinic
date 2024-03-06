@@ -19,5 +19,13 @@ func (m *medicineUC) GetAll() ([]dto.Medicine, error) {
 		return nil, err
 
 	}
-	return all, nil
+	return all, err
+}
+
+func (m *medicineUC) GetById(id string) ([]dto.Medicine, error) {
+	all, err := m.medicineRepo.RetrieveById(id)
+	if err != nil {
+		return all, err
+	}
+	return all, err
 }
