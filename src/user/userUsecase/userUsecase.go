@@ -41,6 +41,7 @@ func (usecase *userUsecase) PatientRegister(req userDto.AuthRequest) (userDto.Us
 		return userDto.User{}, err
 	}
 
+	newUser.Password = ""
 	return newUser, nil
 }
 
@@ -78,6 +79,7 @@ func (usecase *userUsecase) UserRegister(req userDto.RegisterRequest) (userDto.U
 		return userDto.User{}, err
 	}
 
+	newUser.Password = ""
 	return newUser, nil
 }
 
