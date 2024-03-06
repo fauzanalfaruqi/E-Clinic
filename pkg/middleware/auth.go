@@ -13,7 +13,7 @@ func JwtAuth(roles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if !strings.Contains(authHeader, "Bearer") {
-			json.NewResponseUnauthorized(c, "Invalid token", "02", "01")
+			json.NewResponseUnauthorized(c, "Invalid token", "01", "01")
 			c.Abort()
 			return
 		}
@@ -21,13 +21,13 @@ func JwtAuth(roles ...string) gin.HandlerFunc {
 		tokenString := strings.ReplaceAll(authHeader, "Bearer ", "")
 		token, err := utils.VerifyJWT(tokenString)
 		if err != nil {
-			json.NewResponseError(c, err.Error(), "02", "03")
+			json.NewResponseError(c, err.Error(), "01", "03")
 			c.Abort()
 			return
 		}
 
 		if !token.Valid {
-			json.NewResponseForbidden(c, "Forbidden", "02", "04")
+			json.NewResponseForbidden(c, "Forbidden", "01", "04")
 			c.Abort()
 			return
 		}
@@ -44,7 +44,7 @@ func JwtAuth(roles ...string) gin.HandlerFunc {
 		}
 
 		if !validRole {
-			json.NewResponseForbidden(c, "Forbidden", "02", "05")
+			json.NewResponseForbidden(c, "Forbidden", "01", "05")
 			c.Abort()
 			return
 		}

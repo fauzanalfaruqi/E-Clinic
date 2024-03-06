@@ -16,7 +16,7 @@ func NewUserRepository(db *sql.DB) user.UserRepository {
 
 func (repository *userRepository) GetByID(userID string) (userDto.User, error) {
 	query := `
-		SELECT id, username, password, role, specialization, created_at, updated_at, deleted_at
+		SELECT id, username, password, role, specialization, created_at, updated_at
 		FROM users WHERE id = $1 AND deleted_at IS NULL LIMIT 1;
 	`
 	user, err := scanUser(repository.db.QueryRow(query, userID))
@@ -25,7 +25,7 @@ func (repository *userRepository) GetByID(userID string) (userDto.User, error) {
 
 func (repository *userRepository) GetByUsername(username string) (userDto.User, error) {
 	query := `
-		SELECT id, username, password, role, specialization, created_at, updated_at, updated_at
+		SELECT id, username, password, role, specialization, created_at, updated_at
 		FROM users WHERE username = $1 AND deleted_at IS NULL LIMIT 1;
 	`
 	user, err := scanUser(repository.db.QueryRow(query, username))
@@ -50,7 +50,7 @@ func (repository *userRepository) Insert(user userDto.User) (string, error) {
 }
 
 func (repository *userRepository) IsUsernameExists(username string) bool {
-	count, query := 0, "SELECT COUNT(*) FROM users WHERE username = $1 AND deleted_at IS NULL;"
+	count, query := 0, "SELECT COUNT(*) FROM users WHERE username = $1;"
 	repository.db.QueryRow(query, username).Scan(&count)
 	return count > 0
 }
@@ -65,7 +65,6 @@ func scanUser(row *sql.Row) (userDto.User, error) {
 		&user.Specialization,
 		&user.CreatedAt,
 		&user.UpdatedAt,
-		&user.DeletedAt,
 	)
 	return user, err
 }

@@ -8,7 +8,6 @@ type User struct {
 	Specialization interface{} `json:"specialization,omitempty"`
 	CreatedAt      string      `json:"created_at,omitempty"`
 	UpdatedAt      string      `json:"updated_at,omitempty"`
-	DeletedAt      string      `json:"deleted_at,omitempty"`
 }
 
 type AuthRequest struct {
