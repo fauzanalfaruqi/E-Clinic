@@ -96,6 +96,7 @@ func (delivery *userDelivery) Login(c *gin.Context) {
 
 	if err := utils.Validated(request); err != nil {
 		json.NewResponseBadRequest(c, err, "Bad request", "03", "02")
+		return
 	}
 
 	response, err := delivery.userUC.Login(request)
