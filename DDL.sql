@@ -62,7 +62,6 @@ CREATE TABLE medical_records (
   id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
   booking_id uuid NOT NULL REFERENCES bookings (id),
   diagnosis_results text NOT NULL,
-  consultation_fee int,
   total_medicine int,
   total_action int,
   total_amount int,
