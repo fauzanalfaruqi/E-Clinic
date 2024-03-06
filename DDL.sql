@@ -45,7 +45,7 @@ CREATE TABLE actions (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP,
   deleted_at TIMESTAMP
-)
+);
 
 CREATE TABLE bookings (
   id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
