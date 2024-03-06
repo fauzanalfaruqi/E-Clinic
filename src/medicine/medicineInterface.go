@@ -3,11 +3,14 @@ package medicine
 import "avengers-clinic/model/dto"
 
 type MedicineRepository interface {
-	RetrieveAll() ([]dto.Medicine, error)
-	RetrieveById(id string) ([]dto.Medicine, error)
+	RetrieveAll() ([]dto.MedicineResponse, error)
+	RetrieveById(id string) ([]dto.MedicineResponse, error)
+	Create(medicine dto.Medicine) (dto.MedicineResponse, error)
 }
 
 type MedicineUsecase interface {
-	GetAll() ([]dto.Medicine, error)
-	GetById(id string) ([]dto.Medicine, error)
+	GetAll() ([]dto.MedicineResponse, error)
+	GetById(id string) ([]dto.MedicineResponse, error)
+
+	CreateRecord(medicine dto.Medicine) (dto.MedicineResponse, error)
 }
