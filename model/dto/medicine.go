@@ -21,4 +21,7 @@ type MedicineResponse struct {
 	Price        int    `json:"price"`
 	Stock        int    `json:"stock"`
 	Description  string `json:"description"`
+	CreatedAt    string `json:"created_ad"`
+	UpdatedAt    string `json:"updated_ad"`
+	DeletedAt    string `json:"deleted_ad"`
 }

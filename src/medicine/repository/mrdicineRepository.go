@@ -5,6 +5,7 @@ import (
 	"avengers-clinic/src/medicine"
 	"database/sql"
 	"fmt"
+	"time"
 )
 
 type medicineRepository struct {
@@ -25,6 +26,24 @@ func (m *medicineRepository) Create(medicine dto.Medicine) (dto.MedicineResponse
 	return newMedicine, err
 }
 
+func (m *medicineRepository) Update(medicine dto.Medicine) (dto.MedicineResponse, error) {
+	sqlstament := "UPDATE medicines SET name=$2,price=$3,stock=$4,description=$5,updated_at=$6 where id=$1 and deleted_at is null returning id,name,price,stock,description,created_at,updated_at;"
+	var out dto.MedicineResponse
+	err := m.db.QueryRow(sqlstament, medicine.Id, medicine.Name, medicine.Price, medicine.Stock, medicine.Description, medicine.UpdatedAt).Scan(&out.Id, &out.Name, &out.Price, &out.Stock, &out.Description, &out.CreatedAt, &out.UpdatedAt)
+	if err != nil {
+		return out, err
+	}
+	return out, err
+}
+
+func (m *medicineRepository) Delete(id string) (string, error) {
+	sqlstament := "UPDATE medicines SET deleted_at=$1 where id=$2 returning id;"
+	var out dto.MedicineResponse
+	deletedAt := time.Now()
+	err := m.db.QueryRow(sqlstament, deletedAt, id).Scan(&out.Id)
+	return out.Id, err
+}
+
 func (m *medicineRepository) RetrieveAll() ([]dto.MedicineResponse, error) {
 	sqlstatement := "SELECT id,name,medicine_type,price,stock,description from medicines where deleted_at is null"
 	rows, err := m.db.Query(sqlstatement)
@@ -37,7 +56,6 @@ func (m *medicineRepository) RetrieveAll() ([]dto.MedicineResponse, error) {
 		return nil, err
 
 	}
-
 	return expenses, err
 }
 
