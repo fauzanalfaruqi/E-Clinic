@@ -3,6 +3,7 @@ package actionDelivery
 import (
 	"avengers-clinic/model/dto/actionDto"
 	"avengers-clinic/model/dto/json"
+	"avengers-clinic/pkg/middleware"
 	"avengers-clinic/pkg/utils"
 	"avengers-clinic/src/action"
 
@@ -17,13 +18,13 @@ func NewActionDelivery(v1Group *gin.RouterGroup, actionUC action.ActionUsecase) 
 	handler := actionDelivery{actionUC: actionUC}
 	actionGroup := v1Group.Group("/actions")
 	{
-		actionGroup.GET("", handler.GetAll)
-		actionGroup.GET("/:id", handler.GetByID)
-		actionGroup.POST("/", handler.Create)
-		actionGroup.PUT("/:id", handler.Update)
-		actionGroup.DELETE("/:id", handler.Delete)
-		actionGroup.DELETE("/:id/trash", handler.SoftDelete)
-		actionGroup.PUT("/:id/restore", handler.Restore)
+		actionGroup.GET("", middleware.JwtAuth("ADMIN"), handler.GetAll)
+		actionGroup.GET("/:id", middleware.JwtAuth("ADMIN"), handler.GetByID)
+		actionGroup.POST("/", middleware.JwtAuth("ADMIN"), handler.Create)
+		actionGroup.PUT("/:id", middleware.JwtAuth("ADMIN"), handler.Update)
+		actionGroup.DELETE("/:id", middleware.JwtAuth("ADMIN"), handler.Delete)
+		actionGroup.DELETE("/:id/trash", middleware.JwtAuth("ADMIN"), handler.SoftDelete)
+		actionGroup.PUT("/:id/restore", middleware.JwtAuth("ADMIN"), handler.Restore)
 	}
 }
 
