@@ -8,7 +8,7 @@ CREATE TYPE booking_status AS ENUM('WAITING', 'CANCELED', 'DONE');
 
 CREATE TABLE users (
   id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-  username VARCHAR NOT NULL,
+  username VARCHAR NOT NULL UNIQUE,
   password VARCHAR NOT NULL,
   role user_role NOT NULL,
   specialization VARCHAR,
