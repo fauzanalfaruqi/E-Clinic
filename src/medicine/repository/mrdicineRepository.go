@@ -15,10 +15,10 @@ func NewMedicineRepository(db *sql.DB) medicine.MedicineRepository {
 }
 
 func (m *medicineRepository) Create(medicine dto.MedicineRequest) (dto.MedicineResponse, error) {
-	queryStatement := "INSERT INTO medicines (name,medicine_type,price,stock,description,created_at)VALUES($1,$2,$3,$4,$5,$6) returning id"
+	queryStatement := "INSERT INTO medicines (name,medicine_type,price,stock,description,created_at,updated_at)VALUES($1,$2,$3,$4,$5,$6,$7) returning id"
 
 	var returning dto.MedicineRequest
-	err := m.db.QueryRow(queryStatement, medicine.Name, medicine.MedicineType, medicine.Price, medicine.Stock, medicine.Description, medicine.CreatedAt).Scan(&returning.Id)
+	err := m.db.QueryRow(queryStatement, medicine.Name, medicine.MedicineType, medicine.Price, medicine.Stock, medicine.Description, medicine.CreatedAt, medicine.UpdatedAt).Scan(&returning.Id)
 
 	newMedicine := dto.MedicineResponse{Id: returning.Id, Name: medicine.Name, MedicineType: medicine.MedicineType, Price: medicine.Price, Stock: medicine.Stock, Description: medicine.Description, CreatedAt: medicine.CreatedAt}
 	return newMedicine, err
@@ -56,10 +56,10 @@ func (m *medicineRepository) RetrieveAll() ([]dto.MedicineResponse, error) {
 }
 
 func (m *medicineRepository) RetrieveById(id string) (dto.MedicineResponse, error) {
-	queryStatement := "SELECT id,name,medicine_type,price,stock,description from medicines where id=$1 and deleted_at is null"
+	queryStatement := "SELECT id,name,medicine_type,price,stock,description,created_at,COALESCE(TO_CHAR(updated_at, 'YYYY-MM-DD HH24:MI:SS'), '') AS formatted_updated_at from medicines where id=$1 and deleted_at is null"
 	var medicine dto.MedicineResponse
 	rows := m.db.QueryRow(queryStatement, id)
-	err := rows.Scan(&medicine.Id, &medicine.Name, &medicine.MedicineType, &medicine.Price, &medicine.Stock, &medicine.Description)
+	err := rows.Scan(&medicine.Id, &medicine.Name, &medicine.MedicineType, &medicine.Price, &medicine.Stock, &medicine.Description, &medicine.CreatedAt, &medicine.UpdatedAt)
 
 	return medicine, err
 }
