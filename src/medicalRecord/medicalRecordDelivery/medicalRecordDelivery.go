@@ -47,7 +47,7 @@ func (dd *medicalRecordDelivery) getMedicalRecords(ctx *gin.Context) {
 	var mrs []medicalRecordDTO.MedicalRecord
 	var err error
 
-	mrs, err = dd.medicalRecordUC.GetMedicalRecords(ctx)
+	mrs, err = dd.medicalRecordUC.GetMedicalRecords()
 	if err != nil {
 		json.NewResponseError(ctx, err.Error(), "01", "01")
 		return
@@ -60,7 +60,9 @@ func (dd *medicalRecordDelivery) getMedicalRecordByID(ctx *gin.Context) {
 	var mr medicalRecordDTO.MedicalRecord
 	var err error
 
-	mr, err = dd.medicalRecordUC.GetMedicalRecordByID(ctx)
+	id := ctx.Param("id")
+
+	mr, err = dd.medicalRecordUC.GetMedicalRecordByID(id)
 	if err != nil {
 		json.NewResponseBadRequest(ctx, nil, "Error when try to get get medical record by id", "01", "01")
 		return

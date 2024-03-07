@@ -3,8 +3,6 @@ package medicalRecordUsecase
 import (
 	"avengers-clinic/model/dto/medicalRecordDTO"
 	"avengers-clinic/src/medicalRecord"
-
-	"github.com/gin-gonic/gin"
 )
 
 type medicalRecordUsecase struct {
@@ -26,7 +24,7 @@ func (du *medicalRecordUsecase) CreateMedicalRecord(mr *medicalRecordDTO.CreateM
 	return medicalRecord, nil
 }
 
-func (du *medicalRecordUsecase) GetMedicalRecords(ctx *gin.Context) ([]medicalRecordDTO.MedicalRecord, error) {
+func (du *medicalRecordUsecase) GetMedicalRecords() ([]medicalRecordDTO.MedicalRecord, error) {
 	var medicalRecords []medicalRecordDTO.MedicalRecord
 	var err error
 
@@ -38,14 +36,13 @@ func (du *medicalRecordUsecase) GetMedicalRecords(ctx *gin.Context) ([]medicalRe
 	return medicalRecords, nil
 }
 
-func (du *medicalRecordUsecase) GetMedicalRecordByID(ctx *gin.Context) (medicalRecordDTO.MedicalRecord, error) {
-	id := ctx.Param("id")
-	var medicalRecord *medicalRecordDTO.MedicalRecord
+func (du *medicalRecordUsecase) GetMedicalRecordByID(id string) (medicalRecordDTO.MedicalRecord, error) {
+	var medicalRecord medicalRecordDTO.MedicalRecord
 	var err error
 
 	if medicalRecord, err = du.medicalRecordRepo.RetrieveMedicalRecordByID(id); err != nil {
 		return medicalRecordDTO.MedicalRecord{}, nil
 	}
 
-	return *medicalRecord, nil
+	return medicalRecord, nil
 }

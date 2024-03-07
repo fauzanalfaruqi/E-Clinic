@@ -97,24 +97,12 @@ func (dr *medicalRecordRepository) AddMedicalRecord(cmr *medicalRecordDTO.Create
 func (dr *medicalRecordRepository) RetrieveMedicalRecords() ([]medicalRecordDTO.MedicalRecord, error) {
 	var mrs []medicalRecordDTO.MedicalRecord
 
-	// Begin the transaction
-	tx, err := dr.db.Begin()
-	if err != nil {
-		return mrs, err
-	}
-
-	// Defer rollback in case of error
-	defer func() {
-		if err != nil {
-			tx.Rollback()
-		}
-	}()
-
 	// Getting medical_record values
 	query := "SELECT id, booking_id, diagnosis_results FROM medical_records WHERE deleted_at IS null"
-	row, err := tx.Query(query)
+	row, err := dr.db.Query(query)
 	if err != nil {
-		return mrs, err
+		fmt.Println("err1")
+		return []medicalRecordDTO.MedicalRecord{}, err
 	}
 	defer row.Close()
 
@@ -122,25 +110,34 @@ func (dr *medicalRecordRepository) RetrieveMedicalRecords() ([]medicalRecordDTO.
 	for row.Next() {
 		var mr medicalRecordDTO.MedicalRecord
 		if err := row.Scan(&mr.ID, &mr.Booking_ID, &mr.Diagnosis_Result); err != nil {
-			return mrs, err
+			return []medicalRecordDTO.MedicalRecord{}, err
 		}
 
+		// Assign received medical record values into mr slice
+		mrs = append(mrs, mr)
+	}
+
+	// Here we try to assign medicine_details and action_details for each medical record in the mr array
+	for _, mr := range mrs {
 		// Getting medical_record_medicine_details values
 		var mrmds []medicalRecordDTO.Medical_Record_Medicine_Details
 		query = "SELECT id, quantity FROM medical_record_medicine_details WHERE medical_record_id = $1 AND deleted_at IS null"
-		mrmdsRow, err := tx.Query(query, mr.ID)
+		mrmdsRow, err := dr.db.Query(query, mr.ID)
 		if err != nil {
-			return mrs, err
+			return []medicalRecordDTO.MedicalRecord{}, err
 		}
-		defer mrmdsRow.Close()
+
+		//defer mrmdsRow.Close()
 
 		for mrmdsRow.Next() {
 			var mrmd medicalRecordDTO.Medical_Record_Medicine_Details
 			if err := mrmdsRow.Scan(&mrmd.ID, &mrmd.Quantity); err != nil {
-				return mrs, err
+				mrmdsRow.Close()
+				return []medicalRecordDTO.MedicalRecord{}, err
 			}
 			mrmds = append(mrmds, mrmd)
 		}
+		mrmdsRow.Close()
 
 		// Assign medical record medicine details into medical record struct at the current iteration
 		mr.Medicine_Details = mrmds
@@ -148,30 +145,26 @@ func (dr *medicalRecordRepository) RetrieveMedicalRecords() ([]medicalRecordDTO.
 		// Getting medical_record_action_details values
 		var mrads []medicalRecordDTO.Medical_Record_Action_Details
 		query = "SELECT id FROM medical_record_action_details WHERE medical_record_id = $1 AND deleted_at IS null"
-		mradsRow, err := tx.Query(query, mr.ID)
+		mradsRow, err := dr.db.Query(query, mr.ID)
 		if err != nil {
-			return mrs, err
+			mradsRow.Close()
+			return []medicalRecordDTO.MedicalRecord{}, err
 		}
-		defer mradsRow.Close()
+
+		//defer mradsRow.Close()
 
 		for mradsRow.Next() {
 			var mrad medicalRecordDTO.Medical_Record_Action_Details
 			if err := mradsRow.Scan(&mrad.ID); err != nil {
-				return mrs, err
+				return []medicalRecordDTO.MedicalRecord{}, err
 			}
 			mrads = append(mrads, mrad)
 		}
 
+		mradsRow.Close()
+
 		// Assign medical record action details into medical record struct at the current iteration
 		mr.Action_Details = mrads
-
-		// Assign received medical record values into mr slice
-		mrs = append(mrs, mr)
-	}
-
-	// Commit the transaction
-	if err := tx.Commit(); err != nil {
-		return mrs, err
 	}
 
 	// If received medical_record data in db is not empty, return the data
@@ -180,68 +173,57 @@ func (dr *medicalRecordRepository) RetrieveMedicalRecords() ([]medicalRecordDTO.
 	}
 
 	// return data not found as error if data is empty on the db
-	return mrs, errors.New("data not found")
+	return []medicalRecordDTO.MedicalRecord{}, errors.New("data not found")
 }
 
-func (dr *medicalRecordRepository) RetrieveMedicalRecordByID(id string) (*medicalRecordDTO.MedicalRecord, error) {
+func (dr *medicalRecordRepository) RetrieveMedicalRecordByID(id string) (medicalRecordDTO.MedicalRecord, error) {
 	var mr medicalRecordDTO.MedicalRecord
-	var err error
 
 	// Begin the transaction
 	tx, err := dr.db.Begin()
 	if err != nil {
-		tx.Rollback()
-		return &medicalRecordDTO.MedicalRecord{}, err
+		return medicalRecordDTO.MedicalRecord{}, err
 	}
+	defer tx.Rollback()
 
 	// Getting medical record values
-	query := "SELECT id, booking_id, diagnosis_results FROM medical_records WHERE id = S1 AND deleted_at IS null"
+	query := "SELECT id, booking_id, diagnosis_results FROM medical_records WHERE id = $1 AND deleted_at IS null"
 	err = tx.QueryRow(query, id).Scan(&mr.ID, &mr.Booking_ID, &mr.Diagnosis_Result)
 	if err != nil {
-		tx.Rollback()
-		return &medicalRecordDTO.MedicalRecord{}, err
+		return medicalRecordDTO.MedicalRecord{}, err
 	}
 
 	// Getting medical_record_medicine_details values
 	var mrmds []medicalRecordDTO.Medical_Record_Medicine_Details
-
 	query = "SELECT id, quantity FROM medical_record_medicine_details WHERE medical_record_id = $1 AND deleted_at IS null"
 	mrmdsRow, err := tx.Query(query, mr.ID)
 	if err != nil {
-		tx.Rollback()
-		return &medicalRecordDTO.MedicalRecord{}, err
+		return medicalRecordDTO.MedicalRecord{}, err
 	}
+	defer mrmdsRow.Close()
 
 	for mrmdsRow.Next() {
 		var mrmd medicalRecordDTO.Medical_Record_Medicine_Details
 		if err := mrmdsRow.Scan(&mrmd.ID, &mrmd.Quantity); err != nil {
-			tx.Rollback()
-			return &medicalRecordDTO.MedicalRecord{}, err
+			return medicalRecordDTO.MedicalRecord{}, err
 		}
-
 		mrmds = append(mrmds, mrmd)
 	}
 
-	// Assign medical record medicine details into medical record struct at the current iteration
-	mr.Medicine_Details = mrmds
-
 	// Getting medical_record_action_details values
 	var mrads []medicalRecordDTO.Medical_Record_Action_Details
-
 	query = "SELECT id FROM medical_record_action_details WHERE medical_record_id = $1 AND deleted_at IS null"
 	mradsRow, err := tx.Query(query, mr.ID)
 	if err != nil {
-		tx.Rollback()
-		return &medicalRecordDTO.MedicalRecord{}, err
+		return medicalRecordDTO.MedicalRecord{}, err
 	}
+	defer mradsRow.Close()
 
 	for mradsRow.Next() {
 		var mrad medicalRecordDTO.Medical_Record_Action_Details
 		if err := mradsRow.Scan(&mrad.ID); err != nil {
-			tx.Rollback()
-			return &medicalRecordDTO.MedicalRecord{}, err
+			return medicalRecordDTO.MedicalRecord{}, err
 		}
-
 		mrads = append(mrads, mrad)
 	}
 
@@ -251,5 +233,10 @@ func (dr *medicalRecordRepository) RetrieveMedicalRecordByID(id string) (*medica
 	// Assign medical record medicine details into medical record struct at the current iteration
 	mr.Action_Details = mrads
 
-	return &mr, nil
+	// Commit the transaction
+	if err := tx.Commit(); err != nil {
+		return medicalRecordDTO.MedicalRecord{}, err
+	}
+
+	return mr, nil
 }
