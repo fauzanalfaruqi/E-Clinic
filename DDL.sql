@@ -4,6 +4,8 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TYPE user_role AS ENUM ('ADMIN', 'DOCTOR', 'PATIENT');
 
+CREATE TYPE booking_status AS ENUM('WAITING', 'CANCELED', 'DONE');
+
 CREATE TABLE users (
   id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
   username VARCHAR NOT NULL,
@@ -18,8 +20,9 @@ CREATE TABLE users (
 CREATE TABLE doctor_schedules (
   id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
   doctor_id uuid NOT NULL REFERENCES users (id),
-  start_date TIMESTAMP NOT NULL,
-  end_date TIMESTAMP NOT NULL,
+  day_of_week INT NOT NULL,
+  start_at TIME NOT NULL,
+  end_at TIME NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP,
   deleted_at TIMESTAMP
@@ -50,9 +53,11 @@ CREATE TABLE actions (
 CREATE TABLE bookings (
   id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
   patient_id uuid NOT NULL REFERENCES users (id),
-  doctor_id uuid NOT NULL REFERENCES users (id),
-  schedule TIMESTAMP NOT NULL,
-  complaINT text NOT NULL,
+  schedule_id uuid NOT NULL REFERENCES doctor_schedules(id),
+  start_at time NOT NULL,
+  end_at time NOT NULL,
+  status booking_status NOT NULL,
+  complaint text NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP,
   deleted_at TIMESTAMP
