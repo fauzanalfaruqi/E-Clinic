@@ -13,35 +13,32 @@ func NewMedicalRecordUsecase(medicalRecordRepo medicalRecord.MedicalRecordReposi
 	return &medicalRecordUsecase{medicalRecordRepo}
 }
 
-func (du *medicalRecordUsecase) CreateMedicalRecord(mr *medicalRecordDTO.CreateMedicalRecord) (*medicalRecordDTO.CreateMedicalRecord, error) {
-	var medicalRecord *medicalRecordDTO.CreateMedicalRecord
-	var err error
-
-	medicalRecord, err = du.medicalRecordRepo.AddMedicalRecord(mr)
+func (du *medicalRecordUsecase) CreateMedicalRecord(mrr medicalRecordDTO.Medical_Record_Request) (medicalRecordDTO.Medical_Record, error) {
+	medicalRecord, err := du.medicalRecordRepo.AddMedicalRecord(mrr)
 	if err != nil {
-		return &medicalRecordDTO.CreateMedicalRecord{}, nil
+		return medicalRecordDTO.Medical_Record{}, err
 	}
 	return medicalRecord, nil
 }
 
-func (du *medicalRecordUsecase) GetMedicalRecords() ([]medicalRecordDTO.MedicalRecord, error) {
-	var medicalRecords []medicalRecordDTO.MedicalRecord
+func (du *medicalRecordUsecase) GetMedicalRecords() ([]medicalRecordDTO.Medical_Record, error) {
+	var medicalRecords []medicalRecordDTO.Medical_Record
 	var err error
 
 	medicalRecords, err = du.medicalRecordRepo.RetrieveMedicalRecords()
 	if err != nil {
-		return []medicalRecordDTO.MedicalRecord{}, err
+		return []medicalRecordDTO.Medical_Record{}, err
 	}
 
 	return medicalRecords, nil
 }
 
-func (du *medicalRecordUsecase) GetMedicalRecordByID(id string) (medicalRecordDTO.MedicalRecord, error) {
-	var medicalRecord medicalRecordDTO.MedicalRecord
+func (du *medicalRecordUsecase) GetMedicalRecordByID(id string) (medicalRecordDTO.Medical_Record, error) {
+	var medicalRecord medicalRecordDTO.Medical_Record
 	var err error
 
 	if medicalRecord, err = du.medicalRecordRepo.RetrieveMedicalRecordByID(id); err != nil {
-		return medicalRecordDTO.MedicalRecord{}, nil
+		return medicalRecordDTO.Medical_Record{}, err
 	}
 
 	return medicalRecord, nil

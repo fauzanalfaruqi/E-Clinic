@@ -26,15 +26,20 @@ func NewMedicalRecordDelivery(v1Group *gin.RouterGroup, medicalRecordUC medicalR
 }
 
 func (dd *medicalRecordDelivery) createMedicalRecord(ctx *gin.Context) {
-	var cmr medicalRecordDTO.CreateMedicalRecord
+	var mrr medicalRecordDTO.Medical_Record_Request
 	var err error
 
-	if err = ctx.ShouldBindJSON(&cmr); err != nil {
+	if err = ctx.ShouldBindJSON(&mrr); err != nil {
 		json.NewResponseBadRequest(ctx, nil, "Error when binding JSON.", "01", "01")
 		return
 	}
 
-	medicalRecord, err := dd.medicalRecordUC.CreateMedicalRecord(&cmr)
+	// if errV := utils.Validated(cmr); errV != nil {
+	// 	json.NewResponseBadRequest(ctx, errV, "Bad request", "01", "01")
+	// 	return
+	// }
+
+	medicalRecord, err := dd.medicalRecordUC.CreateMedicalRecord(mrr)
 	if err != nil {
 		json.NewResponseError(ctx, err.Error(), "01", "01")
 		return
@@ -44,7 +49,7 @@ func (dd *medicalRecordDelivery) createMedicalRecord(ctx *gin.Context) {
 }
 
 func (dd *medicalRecordDelivery) getMedicalRecords(ctx *gin.Context) {
-	var mrs []medicalRecordDTO.MedicalRecord
+	var mrs []medicalRecordDTO.Medical_Record
 	var err error
 
 	mrs, err = dd.medicalRecordUC.GetMedicalRecords()
@@ -57,14 +62,14 @@ func (dd *medicalRecordDelivery) getMedicalRecords(ctx *gin.Context) {
 }
 
 func (dd *medicalRecordDelivery) getMedicalRecordByID(ctx *gin.Context) {
-	var mr medicalRecordDTO.MedicalRecord
+	var mr medicalRecordDTO.Medical_Record
 	var err error
 
 	id := ctx.Param("id")
 
 	mr, err = dd.medicalRecordUC.GetMedicalRecordByID(id)
 	if err != nil {
-		json.NewResponseBadRequest(ctx, nil, "Error when try to get get medical record by id", "01", "01")
+		json.NewResponseBadRequest(ctx, nil, "data not found", "01", "01")
 		return
 	}
 
