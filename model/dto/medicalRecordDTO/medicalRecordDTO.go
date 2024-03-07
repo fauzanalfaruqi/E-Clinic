@@ -17,10 +17,10 @@ type (
 	}
 
 	CreateMedicalRecord struct {
-		Booking_ID       string                            `json:"booking_id,omitempty" binding:"required" validate:"required"`
-		Diagnosis_Result string                            `json:"diagnosis_result,omitempty" binding:"required" validate:"required"`
-		Medicine_Details []Medical_Record_Medicine_Details `json:"medicine_details,omitempty" binding:"required" validate:"required"`
-		Action_Details   []Medical_Record_Action_Details   `json:"action_details,omitempty" binding:"required" validate:"required"`
+		Booking_ID       string                            `json:"booking_id,omitempty" validate:"required"`
+		Diagnosis_Result string                            `json:"diagnosis_result,omitempty" validate:"required"`
+		Medicine_Details []Medical_Record_Medicine_Details `json:"medicine_details,omitempty" validate:"required"`
+		Action_Details   []Medical_Record_Action_Details   `json:"action_details,omitempty" validate:"required"`
 	}
 
 	Medical_Record_Medicine_Details struct {
