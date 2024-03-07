@@ -39,7 +39,7 @@ CREATE TABLE medicines (
 
 CREATE TABLE actions (
   id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-  name VARCHAR NOT NULL,
+  name VARCHAR NOT NULL UNIQUE,
   price INT NOT NULL,
   description text,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
