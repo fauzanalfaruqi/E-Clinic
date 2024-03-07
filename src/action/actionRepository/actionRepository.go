@@ -4,7 +4,6 @@ import (
 	"avengers-clinic/model/dto/actionDto"
 	"avengers-clinic/src/action"
 	"database/sql"
-	"time"
 )
 
 type actionRepository struct {
@@ -77,9 +76,8 @@ func (repository *actionRepository) Delete(actionID string) error {
 }
 
 func (repository *actionRepository) SoftDelete(actionID string) error {
-	now := time.Now().Format("2006-01-02 15:04:05")
-	query := "UPDATE actions SET deleted_at = $2 WHERE id = $1;"
-	_, err := repository.db.Exec(query, actionID, now)
+	query := "UPDATE actions SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1;"
+	_, err := repository.db.Exec(query, actionID)
 	return err
 }
 

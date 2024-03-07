@@ -24,10 +24,15 @@ func Validated(s interface{}) []json.ValidationField {
 
 func getErrorMessage(tag string) string {
 	messages := map[string]string{
-		"required": "field is required",
-		"email": "email is not valid",
-		"string": "field is not string",
-		"number": "field is not number",
+		"boolean": "Field must be boolean",
+		"datetime": "Field must be date",
+		"email": "Email is not valid",
+		"number": "Field must be number",
+		"numeric": "Field must be numeric",
+		"required": "Field is required",
+		"uuid": "Invalid uuid",
+		"uuid3": "Invalid uuid",
+		"uuid4": "Invalid uuid",
 	}
 
 	for key, message := range messages {

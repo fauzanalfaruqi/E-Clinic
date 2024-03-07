@@ -12,3 +12,13 @@ type ActionRepository interface {
 	Restore(actionID string) error
 	IsNameExist(name string) bool
 }
+
+type ActionUsecase interface {
+	GetAll() ([]actionDto.Action, error)
+	GetByID(actionID string) (actionDto.Action, error)
+	Create(req actionDto.CreateRequest) (actionDto.Action, error)
+	Update(req actionDto.UpdateRequest) (actionDto.Action, error)
+	Delete(actionID string) error
+	SoftDelete(actionID string) error
+	Restore(actionID string) error
+}
