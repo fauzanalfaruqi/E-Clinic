@@ -3,6 +3,7 @@ package delivery
 import (
 	"avengers-clinic/model/dto"
 	"avengers-clinic/model/dto/json"
+	"avengers-clinic/pkg/utils"
 	"avengers-clinic/src/medicine"
 	"fmt"
 
@@ -43,9 +44,13 @@ func (m *medicineDelivery) getById(ctx *gin.Context) {
 }
 
 func (m *medicineDelivery) create(ctx *gin.Context) {
-	var medicine dto.Medicine
+	var medicine dto.MedicineRequest
 	if err := ctx.ShouldBindJSON(&medicine); err != nil {
 		json.NewResponseBadRequest(ctx, []json.ValidationField{}, "error insert new medicine", "01", "01")
+		return
+	}
+	if err := utils.Validated(medicine); err != nil {
+		json.NewResponseBadRequest(ctx, err, "bad request", "01", "01")
 		return
 	}
 	fmt.Println(medicine)
@@ -54,18 +59,18 @@ func (m *medicineDelivery) create(ctx *gin.Context) {
 		json.NewResponseError(ctx, err.Error(), "01", "01")
 		return
 	}
-	json.NewResponseSuccess(ctx, insert, "succesfuly insert new medicine", "01", "01")
+	json.NewResponseCreated(ctx, insert, "succesfully insert new medicine", "01", "01")
 }
 
 func (m *medicineDelivery) update(ctx *gin.Context) {
 	id := ctx.Param("id")
-
-	var medicine dto.Medicine
+	var medicine dto.MedicineRequest
 	medicine.Id = id
 	if err := ctx.ShouldBindJSON(&medicine); err != nil {
 		json.NewResponseBadRequest(ctx, []json.ValidationField{}, "bad request", "01", "01")
 		return
 	}
+
 	insert, err := m.medicineUC.UpdateRecord(medicine)
 	if err != nil {
 		json.NewResponseError(ctx, err.Error(), "01", "01")
@@ -77,18 +82,17 @@ func (m *medicineDelivery) update(ctx *gin.Context) {
 
 func (m *medicineDelivery) delete(ctx *gin.Context) {
 
-	var prod dto.Medicine
+	var prod dto.MedicineRequest
 	if err := ctx.ShouldBindJSON(&prod); err != nil {
 		json.NewResponseBadRequest(ctx, []json.ValidationField{}, "bad request", "01", "01")
 		fmt.Println(err.Error())
 		return
 	}
-	insert, err := m.medicineUC.DeleteRecord(prod.Id)
+	err := m.medicineUC.DeleteRecord(prod.Id)
 	if err != nil {
 		json.NewResponseError(ctx, err.Error(), "01", "01")
 		return
 	}
-	fmt.Println(insert, "Delete product delivery")
 
-	json.NewResponseSuccess(ctx, insert, "success delete product", "01", "01")
+	json.NewResponseSuccess(ctx, prod.Id, "success delete product", "01", "01")
 }
