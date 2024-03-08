@@ -21,8 +21,8 @@ type (
 		Booking_ID       string                     `json:"booking_id" validate:"required"`
 		Diagnosis_Result string                     `json:"diagnosis_result" validate:"required"`
 		Payment_Status   bool                       `json:"payment_status,omitempty"`
-		Medicine_Details []Medicine_Details_Request `json:"medicine_details" validate:"required,dive"`
-		Action_Details   []Action_Details_Request   `json:"action_details" validate:"required,dive"`
+		Medicine_Details []Medicine_Details_Request `json:"medicine_details" validate:"dive"`
+		Action_Details   []Action_Details_Request   `json:"action_details" validate:"dive"`
 	}
 
 	Medical_Record_Medicine_Details struct {
@@ -56,7 +56,6 @@ type (
 	}
 
 	Action_Details_Request struct {
-		Medical_Record_ID string `json:"medical_record_id" validate:"required"`
-		Action_ID         string `json:"action_id" validate:"required"`
+		Action_ID string `json:"action_id" validate:"required"`
 	}
 )
