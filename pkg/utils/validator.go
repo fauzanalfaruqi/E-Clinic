@@ -2,19 +2,23 @@ package utils
 
 import (
 	"avengers-clinic/model/dto/json"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 )
 
 func Validated(s interface{}) []json.ValidationField {
 	validate := validator.New(validator.WithRequiredStructEnabled())
+	// register custom validate
+	registerValidation(validate)
+
 	var errors []json.ValidationField
 	err := validate.Struct(s)
 	if err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
 			fieldError := json.ValidationField{
 				FieldName: err.Field(),
-				Message: getErrorMessage(err.Tag()),
+				Message: getErrorMessage(err),
 			}
 			errors = append(errors, fieldError)
 		}
@@ -22,11 +26,12 @@ func Validated(s interface{}) []json.ValidationField {
 	return errors
 }
 
-func getErrorMessage(tag string) string {
+func getErrorMessage(err validator.FieldError) string {
 	messages := map[string]string{
 		"boolean": "Field must be boolean",
-		"datetime": "Field must be date",
+		"datetime": "Invalid date",
 		"email": "Email is not valid",
+		"enum": "Field must be ["+err.Param()+"]",
 		"number": "Field must be number",
 		"numeric": "Field must be numeric",
 		"required": "Field is required",
@@ -36,10 +41,28 @@ func getErrorMessage(tag string) string {
 	}
 
 	for key, message := range messages {
-		if tag == key {
+		if err.Tag() == key {
 			return message
 		}
 	}
 
 	return ""
+}
+
+func registerValidation(validate *validator.Validate) {
+	validate.RegisterValidation("enum", enumValidator)
+}
+
+func enumValidator(fl validator.FieldLevel) bool {
+	value := fl.Field().String()
+	params := strings.Split(fl.Param(), " ")
+	
+	isValid := false
+	for _, param := range params {
+		if value == param {
+			isValid = true
+			break
+		}
+	}
+	return isValid
 }
