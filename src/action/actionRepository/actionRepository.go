@@ -37,6 +37,15 @@ func (repository *actionRepository) GetByID(actionID string) (actionDto.Action, 
 	return action, err
 }
 
+func (repository *actionRepository) GetTrashByID(actionID string) (actionDto.Action, error) {
+	query := `
+		SELECT id, name, price, description, created_at, updated_at
+		FROM actions WHERE id = $1 AND deleted_at IS NOT NULL LIMIT 1;
+	`
+	action, err := scanAction(repository.db.QueryRow(query, actionID))
+	return action, err
+}
+
 func (repository *actionRepository) Insert(action actionDto.Action) (string, error) {
 	query := `
 		INSERT INTO actions (name, price, description, created_at, updated_at)
