@@ -30,6 +30,7 @@ func (m *medicineDelivery) getAll(ctx *gin.Context) {
 	getAll, err := m.medicineUC.GetAll()
 	if err != nil {
 		json.NewResponseError(ctx, err.Error(), "01", "01")
+		return
 	}
 	json.NewResponseSuccess(ctx, getAll, "success", "01", "01")
 }
@@ -39,6 +40,7 @@ func (m *medicineDelivery) getById(ctx *gin.Context) {
 	getById, err := m.medicineUC.GetById(id)
 	if err != nil {
 		json.NewResponseError(ctx, err.Error(), "01", "01")
+		return
 	}
 	json.NewResponseSuccess(ctx, getById, "success", "01", "01")
 }

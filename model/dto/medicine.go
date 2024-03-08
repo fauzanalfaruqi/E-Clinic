@@ -3,7 +3,7 @@ package dto
 type MedicineRequest struct {
 	Id           string      `json:"id"`
 	Name         string      `json:"name" validate:"required"`
-	MedicineType string      `json:"medicine_type" validate:"required"`
+	MedicineType string      `json:"medicine_type" validate:"required,enum=TABLET KAPSUL OLES CAIR"`
 	Price        int         `json:"price" validate:"required"`
 	Stock        int         `json:"stock"`
 	Description  interface{} `json:"description"`
