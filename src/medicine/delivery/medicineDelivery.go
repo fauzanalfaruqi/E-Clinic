@@ -5,6 +5,7 @@ import (
 	"avengers-clinic/model/dto/json"
 	"avengers-clinic/pkg/utils"
 	"avengers-clinic/src/medicine"
+	"database/sql"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
@@ -39,6 +40,10 @@ func (m *medicineDelivery) getById(ctx *gin.Context) {
 	id := (ctx.Param("id"))
 	getById, err := m.medicineUC.GetById(id)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			json.NewResponseForbidden(ctx, "Forbidden", "01", "01")
+			return
+		}
 		json.NewResponseError(ctx, err.Error(), "01", "01")
 		return
 	}
