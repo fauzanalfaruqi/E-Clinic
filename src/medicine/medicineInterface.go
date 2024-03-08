@@ -10,6 +10,8 @@ type MedicineRepository interface {
 	Create(medicine dto.MedicineRequest) (dto.MedicineResponse, error)
 	Update(medicine dto.MedicineRequest) (dto.MedicineResponse, error)
 	Delete(id string, deletedAt string) error
+	Trash() ([]dto.MedicineResponse, error)
+	Restore(id string) error
 }
 
 type MedicineUsecase interface {
@@ -18,4 +20,6 @@ type MedicineUsecase interface {
 	CreateRecord(medicine dto.MedicineRequest) (dto.MedicineResponse, error)
 	UpdateRecord(medicine dto.MedicineRequest) (dto.MedicineResponse, error)
 	DeleteRecord(id string) error
+	TrashRecord() ([]dto.MedicineResponse, error)
+	RestoreRecord(id string) error
 }

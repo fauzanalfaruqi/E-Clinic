@@ -100,3 +100,21 @@ func (m *medicineUC) DeleteRecord(id string) error {
 	}
 	return err
 }
+
+func (m *medicineUC) TrashRecord() ([]dto.MedicineResponse, error) {
+	all, err := m.medicineRepo.Trash()
+	if err != nil {
+		return nil, err
+
+	}
+	return all, nil
+}
+
+func (m *medicineUC) RestoreRecord(id string) error {
+	var err error
+	err = m.medicineRepo.Restore(id)
+	if err != nil {
+		return err
+	}
+	return err
+}
