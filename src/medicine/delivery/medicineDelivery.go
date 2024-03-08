@@ -41,7 +41,7 @@ func (m *medicineDelivery) getById(ctx *gin.Context) {
 	getById, err := m.medicineUC.GetById(id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			json.NewResponseForbidden(ctx, "Forbidden", "01", "01")
+			json.NewResponseForbidden(ctx, "Id Not Found", "01", "01")
 			return
 		}
 		json.NewResponseError(ctx, err.Error(), "01", "01")
