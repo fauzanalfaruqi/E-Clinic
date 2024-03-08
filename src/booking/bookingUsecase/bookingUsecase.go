@@ -5,18 +5,22 @@ import (
 	"avengers-clinic/model/entity"
 	"avengers-clinic/pkg/constants"
 	"avengers-clinic/src/booking"
+	"avengers-clinic/src/doctorSchedule"
 	"errors"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 type bookingUsecase struct {
-	bookingRepo booking.BookingRepository
+	bookingRepo  booking.BookingRepository
+	scheduleRepo doctorSchedule.DoctorScheduleRepository
 }
 
-func NewBookingUsecase(bookingRepo booking.BookingRepository) booking.BookingUsecase {
+func NewBookingUsecase(bookingRepo booking.BookingRepository, scheduleRepo doctorSchedule.DoctorScheduleRepository) booking.BookingUsecase {
 	return &bookingUsecase{
 		bookingRepo,
+		scheduleRepo,
 	}
 }
 
@@ -55,6 +59,12 @@ func (bu bookingUsecase) Create(input dto.CreateBooking) (entity.Bookings, error
 		Complaint:        input.Complaint,
 		Status:           constants.Waiting,
 	}
+
+	valid, err := bu.validateDay(book.BookingDate, book.DoctorScheduleID)
+	if !valid {
+		return book, err
+	}
+
 	data, err := bu.bookingRepo.CreateBooking(book)
 	if err != nil {
 		return data, err
@@ -121,4 +131,19 @@ func (bu bookingUsecase) FinishBooking(id uuid.UUID) (entity.Bookings, error) {
 	}
 	data.Status = constants.Done
 	return data, nil
+}
+
+func (bu bookingUsecase) validateDay(bookingDate string, doctorScheduleID uuid.UUID) (bool, error) {
+	docSched, err := bu.scheduleRepo.RetrieveByID(doctorScheduleID)
+	if err != nil {
+		return false, err
+	}
+
+	date, _ := time.Parse("2006-01-02", bookingDate)
+	dOWDate := date.Weekday()
+	if dOWDate != time.Weekday(docSched.DayOfWeek) {
+		return false, errors.New(constants.ErrScheduleNotMatch)
+	}
+
+	return true, nil
 }
