@@ -1,4 +1,4 @@
 .env
 .idea
-ddl_dummy.sql
-src/medicalRecord/medicalRecordRepository/meedicalRecordRepository_test.go
+*.http
+*.log

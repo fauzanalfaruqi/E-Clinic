@@ -4,9 +4,11 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TYPE user_role AS ENUM ('ADMIN', 'DOCTOR', 'PATIENT');
 
+CREATE TYPE booking_status AS ENUM('WAITING', 'CANCELED', 'DONE');
+
 CREATE TABLE users (
   id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-  username VARCHAR NOT NULL,
+  username VARCHAR NOT NULL UNIQUE,
   password VARCHAR NOT NULL,
   role user_role NOT NULL,
   specialization VARCHAR,
@@ -18,8 +20,9 @@ CREATE TABLE users (
 CREATE TABLE doctor_schedules (
   id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
   doctor_id uuid NOT NULL REFERENCES users (id),
-  start_date TIMESTAMP NOT NULL,
-  end_date TIMESTAMP NOT NULL,
+  day_of_week INT NOT NULL,
+  start_at TIME NOT NULL,
+  end_at TIME NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP,
   deleted_at TIMESTAMP
@@ -39,7 +42,7 @@ CREATE TABLE medicines (
 
 CREATE TABLE actions (
   id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-  name VARCHAR NOT NULL,
+  name VARCHAR NOT NULL UNIQUE,
   price INT NOT NULL,
   description text,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -48,11 +51,13 @@ CREATE TABLE actions (
 );
 
 CREATE TABLE bookings (
-  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   patient_id uuid NOT NULL REFERENCES users (id),
-  doctor_id uuid NOT NULL REFERENCES users (id),
-  schedule TIMESTAMP NOT NULL,
-  complaINT text NOT NULL,
+  doctor_schedule_id uuid NOT NULL REFERENCES doctor_schedules(id),
+  booking_date DATE NOT NULL,
+  mst_schedule_id int NOT NULL REFERENCES mst_schedule(id),
+  status booking_status NOT NULL,
+  complaint text NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP,
   deleted_at TIMESTAMP
@@ -91,3 +96,13 @@ CREATE TABLE medical_record_action_details (
   updated_at TIMESTAMP,
   deleted_at TIMESTAMP
 );
+
+
+CREATE TABLE mst_schedule(
+  id INT PRIMARY KEY,
+  start_at TIME NOT NULL,
+  end_at TIME NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP,
+  deleted_at TIMESTAMP
+)
