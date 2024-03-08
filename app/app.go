@@ -124,11 +124,19 @@ func RunService() {
 		MaxAge: 120 * time.Second,
 	}))
 
-	log.Logger = log.With().Caller().Logger()
+	// open file app.log
+	file, err := os.OpenFile("app.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Unable to open log file")
+	}
+	defer file.Close()
+	
+	// config logger zerolog
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: file}).With().Caller().Logger()
 
 	r.Use(logger.SetLogger(
 		logger.WithLogger(func(_ *gin.Context, l zerolog.Logger) zerolog.Logger {
-			return l.Output(os.Stdout).With().Logger()
+			return l.Output(file).With().Logger()
 		}),
 	))
 
