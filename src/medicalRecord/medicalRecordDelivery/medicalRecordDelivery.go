@@ -3,6 +3,7 @@ package medicalRecordDelivery
 import (
 	"avengers-clinic/model/dto/json"
 	"avengers-clinic/model/dto/medicalRecordDTO"
+	"avengers-clinic/pkg/utils"
 	"avengers-clinic/src/medicalRecord"
 
 	"github.com/gin-gonic/gin"
@@ -26,22 +27,26 @@ func NewMedicalRecordDelivery(v1Group *gin.RouterGroup, medicalRecordUC medicalR
 }
 
 func (dd *medicalRecordDelivery) createMedicalRecord(ctx *gin.Context) {
-	var mrr medicalRecordDTO.Medical_Record_Request
+	var req medicalRecordDTO.Medical_Record_Request
 	var err error
 
-	if err = ctx.ShouldBindJSON(&mrr); err != nil {
+	if err = ctx.ShouldBindJSON(&req); err != nil {
 		json.NewResponseBadRequest(ctx, nil, "Error when binding JSON.", "01", "01")
 		return
 	}
 
-	// if errV := utils.Validated(cmr); errV != nil {
-	// 	json.NewResponseBadRequest(ctx, errV, "Bad request", "01", "01")
-	// 	return
-	// }
+	if errV := utils.Validated(req); errV != nil {
+		json.NewResponseBadRequest(ctx, errV, "Bad request", "01", "01")
+		return
+	}
 
-	medicalRecord, err := dd.medicalRecordUC.CreateMedicalRecord(mrr)
+	medicalRecord, err := dd.medicalRecordUC.CreateMedicalRecord(req)
 	if err != nil {
-		json.NewResponseError(ctx, err.Error(), "01", "01")
+		// if err.Error() == "err1" {
+		// 	json.NewResponseBadRequest(ctx, nil, "required fields cannot be empty", "01", "01")
+		// 	return
+		// }
+		json.NewResponseError(ctx, err.Error(), "01", "02")
 		return
 	}
 

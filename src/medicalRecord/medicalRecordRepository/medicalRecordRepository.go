@@ -214,9 +214,6 @@ func (dr *medicalRecordRepository) GetMedicineDetails(db *sql.DB, mrID string) (
 		}
 	}
 
-	// TODO: get medicine price
-	// Read and assign values from medicines tables into medicine_details struct
-
 	return medicineDetails, nil
 }
 

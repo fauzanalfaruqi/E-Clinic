@@ -13,11 +13,29 @@ func NewMedicalRecordUsecase(medicalRecordRepo medicalRecord.MedicalRecordReposi
 	return &medicalRecordUsecase{medicalRecordRepo}
 }
 
-func (du *medicalRecordUsecase) CreateMedicalRecord(mrr medicalRecordDTO.Medical_Record_Request) (medicalRecordDTO.Medical_Record, error) {
-	medicalRecord, err := du.medicalRecordRepo.AddMedicalRecord(mrr)
+func (du *medicalRecordUsecase) CreateMedicalRecord(req medicalRecordDTO.Medical_Record_Request) (medicalRecordDTO.Medical_Record, error) {
+
+	// if req.Booking_ID == "" || req.Diagnosis_Result == "" {
+	// 	return medicalRecordDTO.Medical_Record{}, errors.New("err1")
+	// }
+
+	// for i := range req.Medicine_Details {
+	// 	if req.Medicine_Details[i].Medicine_ID == "" || req.Medicine_Details[i].Quantity >= 0 {
+	// 		return medicalRecordDTO.Medical_Record{}, errors.New("err1")
+	// 	}
+	// }
+
+	// for i := range req.Action_Details {
+	// 	if req.Action_Details[i].Action_ID == "" {
+	// 		return medicalRecordDTO.Medical_Record{}, errors.New("err1")
+	// 	}
+	// }
+
+	medicalRecord, err := du.medicalRecordRepo.AddMedicalRecord(req)
 	if err != nil {
 		return medicalRecordDTO.Medical_Record{}, err
 	}
+
 	return medicalRecord, nil
 }
 

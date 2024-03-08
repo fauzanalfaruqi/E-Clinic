@@ -18,11 +18,11 @@ type (
 
 	Medical_Record_Request struct {
 		ID               string                     `json:"id,omitempty"`
-		Booking_ID       string                     `json:"booking_id,omitempty" validate:"require"`
-		Diagnosis_Result string                     `json:"diagnosis_result,omitempty" validate:"required"`
+		Booking_ID       string                     `json:"booking_id" validate:"required"`
+		Diagnosis_Result string                     `json:"diagnosis_result" validate:"required"`
 		Payment_Status   bool                       `json:"payment_status,omitempty"`
-		Medicine_Details []Medicine_Details_Request `json:"medicine_details,omitempty" validate:"required"`
-		Action_Details   []Action_Details_Request   `json:"action_details,omitempty" validate:"required"`
+		Medicine_Details []Medicine_Details_Request `json:"medicine_details" validate:"required,dive"`
+		Action_Details   []Action_Details_Request   `json:"action_details" validate:"required,dive"`
 	}
 
 	Medical_Record_Medicine_Details struct {
@@ -39,8 +39,8 @@ type (
 	}
 
 	Medicine_Details_Request struct {
-		Medicine_ID string `json:"medicine_id,omitempty" validate:"required"`
-		Quantity    int    `json:"quantity,omitempty" validate:"required"`
+		Medicine_ID string `json:"medicine_id" validate:"required"`
+		Quantity    int    `json:"quantity" validate:"required,number"`
 	}
 
 	Medical_Record_Action_Details struct {
@@ -56,7 +56,7 @@ type (
 	}
 
 	Action_Details_Request struct {
-		Medical_Record_ID string `json:"medical_record_id,omitempty" validate:"required"`
-		Action_ID         string `json:"action_id,omitempty" validate:"required"`
+		Medical_Record_ID string `json:"medical_record_id" validate:"required"`
+		Action_ID         string `json:"action_id" validate:"required"`
 	}
 )
