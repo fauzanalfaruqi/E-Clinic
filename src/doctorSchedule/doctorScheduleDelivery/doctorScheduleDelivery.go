@@ -51,7 +51,7 @@ func (dd doctorScheduleDelivery) GetByID(ctx *gin.Context) {
 
 	data, err := dd.scheduleUC.GetByID(id)
 	if err != nil && err == sql.ErrNoRows {
-		json.NewResponseBadRequest(ctx, nil, err.Error(), constants.DoctorScheduleService, "01")
+		json.NewResponseBadRequest(ctx, nil, "data not found", constants.DoctorScheduleService, "01")
 		return
 	} else if err != nil {
 		json.NewResponseError(ctx, err.Error(), constants.DoctorScheduleService, "01")
@@ -73,6 +73,13 @@ func (dd doctorScheduleDelivery) CreateSchedule(ctx *gin.Context) {
 	if err := utils.Validated(input); err != nil {
 		json.NewResponseBadRequest(ctx, err, "Bad request", constants.DoctorScheduleService, "01")
 		return
+	}
+
+	for _, v := range input.ScheduleDetail {
+		if err := utils.Validated(v); err != nil {
+			json.NewResponseBadRequest(ctx, err, "Bad request", constants.DoctorScheduleService, "01")
+			return
+		}
 	}
 
 	data, err := dd.scheduleUC.CreateSchedule(input)
@@ -104,7 +111,10 @@ func (dd doctorScheduleDelivery) UpdateSchedule(ctx *gin.Context) {
 	}
 
 	data, err := dd.scheduleUC.UpdateSchedule(id, input)
-	if err != nil {
+	if err != nil && err == sql.ErrNoRows {
+		json.NewResponseBadRequest(ctx, nil, "data not found", constants.DoctorScheduleService, "01")
+		return
+	}else if err != nil {
 		json.NewResponseError(ctx, err.Error(), constants.DoctorScheduleService, "01")
 		return
 	}
@@ -121,7 +131,7 @@ func (dd doctorScheduleDelivery) DeleteSchedule(ctx *gin.Context) {
 
 	err = dd.scheduleUC.DeleteSchedule(id)
 	if err != nil && err == sql.ErrNoRows {
-		json.NewResponseBadRequest(ctx, nil, "id not found", constants.DoctorScheduleService, "01")
+		json.NewResponseBadRequest(ctx, nil, "data not found", constants.DoctorScheduleService, "01")
 		return
 	}else if err != nil {
 		json.NewResponseError(ctx, err.Error(), constants.DoctorScheduleService, "01")
@@ -140,7 +150,7 @@ func (dd doctorScheduleDelivery) RestoreSchedule(ctx *gin.Context) {
 
 	err = dd.scheduleUC.Restore(id)
 	if err != nil && err == sql.ErrNoRows {
-		json.NewResponseBadRequest(ctx, nil, "id not found", constants.DoctorScheduleService, "01")
+		json.NewResponseBadRequest(ctx, nil, "data not found", constants.DoctorScheduleService, "01")
 		return
 	}else if err != nil {
 		json.NewResponseError(ctx, err.Error(), constants.DoctorScheduleService, "01")

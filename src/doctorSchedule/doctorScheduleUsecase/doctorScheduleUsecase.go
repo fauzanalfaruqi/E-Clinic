@@ -38,6 +38,8 @@ func (du doctorScheduleUsecase) GetByID(id uuid.UUID) (entity.DoctorSchedule, er
 }
 
 func (du doctorScheduleUsecase) CreateSchedule(input dto.CreateDoctorSchedule) ([]entity.DoctorSchedule, error) {
+	// TODO : Add validation to input.doctor_id
+	
 	data, err := du.scheduleRepo.InsertSchedule(input)
 	if err != nil {
 		return nil, err
