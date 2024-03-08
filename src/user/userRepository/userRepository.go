@@ -14,6 +14,34 @@ func NewUserRepository(db *sql.DB) user.UserRepository {
 	return &userRepository{db}
 }
 
+func (repository *userRepository) GetAllTrash() ([]userDto.User, error) {
+	query := `
+		SELECT id, username, password, role, specialization, created_at, updated_at
+		FROM users WHERE deleted_at != NULL ORDER BY created_at DESC;
+	`
+	rows, err := repository.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	actions, err := scanUsers(rows)
+	return actions, err
+}
+
+func (repository *userRepository) GetAll() ([]userDto.User, error) {
+	query := `
+		SELECT id, username, password, role, specialization, created_at, updated_at
+		FROM users WHERE deleted_at IS NULL ORDER BY created_at DESC;
+	`
+	rows, err := repository.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	actions, err := scanUsers(rows)
+	return actions, err
+}
+
 func (repository *userRepository) GetByID(userID string) (userDto.User, error) {
 	query := `
 		SELECT id, username, password, role, specialization, created_at, updated_at
@@ -38,7 +66,7 @@ func (repository *userRepository) Insert(user userDto.User) (string, error) {
 		VALUES ($1, $2, $3, $4, $5, $6) RETURNING id;
 	`
 	err := repository.db.QueryRow(
-		query, 
+		query,
 		user.Username,
 		user.Password,
 		user.Role,
@@ -47,6 +75,45 @@ func (repository *userRepository) Insert(user userDto.User) (string, error) {
 		user.UpdatedAt,
 	).Scan(&user.ID);
 	return user.ID, err
+}
+
+func (repository *userRepository) Update(user userDto.User) error {
+	query := `
+		UPDATE users SET username = $2, specialization = $3, updated_at = $4
+		Where id = $1;
+	`
+	_, err := repository.db.Exec(
+		query,
+		user.ID,
+		user.Username,
+		user.Specialization,
+		user.UpdatedAt,
+	)
+	return err
+}
+
+func (repository *userRepository) UpdatePassword(userId, hashPassword string) error {
+	query := "UPDATE users SET password = $2 WHERE id = $1;"
+	_, err := repository.db.Exec(query, userId, hashPassword)
+	return err
+}
+
+func (repository *userRepository) Delete(userID string) error {
+	query := "DELETE FROM users WHERE id = $1;"
+	_, err := repository.db.Exec(query, userID)
+	return err
+}
+
+func (repository *userRepository) SoftDelete(userID string) error {
+	query := "UPDATE users SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1;"
+	_, err := repository.db.Exec(query, userID)
+	return err
+}
+
+func (repository *userRepository) Restore(userID string) error {
+	query := "UPDATE users SET deleted_at = NULL WHERE id = $1;"
+	_, err := repository.db.Exec(query, userID)
+	return err
 }
 
 func (repository *userRepository) IsUsernameExists(username string) bool {
@@ -67,4 +134,25 @@ func scanUser(row *sql.Row) (userDto.User, error) {
 		&user.UpdatedAt,
 	)
 	return user, err
+}
+
+func scanUsers(rows *sql.Rows) ([]userDto.User, error) {
+	var users []userDto.User
+	for rows.Next() {
+		var user userDto.User
+		err := rows.Scan(
+			&user.ID,
+			&user.Username,
+			&user.Password,
+			&user.Role,
+			&user.Specialization,
+			&user.CreatedAt,
+			&user.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	return users, nil
 }
