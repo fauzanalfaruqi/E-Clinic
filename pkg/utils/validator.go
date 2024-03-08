@@ -2,6 +2,7 @@ package utils
 
 import (
 	"avengers-clinic/model/dto/json"
+	"regexp"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
@@ -9,6 +10,7 @@ import (
 
 func Validated(s interface{}) []json.ValidationField {
 	validate := validator.New(validator.WithRequiredStructEnabled())
+
 	// register custom validate
 	registerValidation(validate)
 
@@ -26,6 +28,14 @@ func Validated(s interface{}) []json.ValidationField {
 	return errors
 }
 
+func regexValidate(fl validator.FieldLevel) bool {
+	value := fl.Field().String()
+	pattern := fl.Param()
+
+	matched, _ := regexp.MatchString(pattern, value)
+	return matched
+}
+
 func getErrorMessage(err validator.FieldError) string {
 	messages := map[string]string{
 		"boolean": "Field must be boolean",
@@ -38,6 +48,8 @@ func getErrorMessage(err validator.FieldError) string {
 		"uuid": "Invalid uuid",
 		"uuid3": "Invalid uuid",
 		"uuid4": "Invalid uuid",
+		"lt":       "weekend tutup (>5)",
+		"gt":       "weekend tutup (<=0)",
 	}
 
 	for key, message := range messages {
@@ -45,12 +57,13 @@ func getErrorMessage(err validator.FieldError) string {
 			return message
 		}
 	}
-
+	
 	return ""
 }
 
 func registerValidation(validate *validator.Validate) {
 	validate.RegisterValidation("enum", enumValidator)
+	validate.RegisterValidation("regex", regexValidate)
 }
 
 func enumValidator(fl validator.FieldLevel) bool {
