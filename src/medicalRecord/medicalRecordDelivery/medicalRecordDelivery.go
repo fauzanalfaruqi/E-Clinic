@@ -23,6 +23,7 @@ func NewMedicalRecordDelivery(v1Group *gin.RouterGroup, medicalRecordUC medicalR
 		medicalRecordGoup.POST("", handler.createMedicalRecord)
 		medicalRecordGoup.GET("", handler.getMedicalRecords)
 		medicalRecordGoup.GET("/:id", handler.getMedicalRecordByID)
+		medicalRecordGoup.PUT("/:id", handler.updatePaymentStatus)
 	}
 }
 
@@ -79,4 +80,19 @@ func (dd *medicalRecordDelivery) getMedicalRecordByID(ctx *gin.Context) {
 	}
 
 	json.NewResponseSuccess(ctx, mr, "data received", "01", "01")
+}
+
+func (dd *medicalRecordDelivery) updatePaymentStatus(ctx *gin.Context) {
+	var mr medicalRecordDTO.Medical_Record
+	var err error
+
+	id := ctx.Param("id")
+
+	mr, err = dd.medicalRecordUC.UpdatePaymentStatus(id)
+	if err != nil {
+		json.NewResponseBadRequest(ctx, nil, "data not found", "01", "01")
+		return
+	}
+
+	json.NewResponseSuccess(ctx, mr, "data updated", "01", "01")
 }

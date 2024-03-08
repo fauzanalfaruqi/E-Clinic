@@ -61,3 +61,14 @@ func (du *medicalRecordUsecase) GetMedicalRecordByID(id string) (medicalRecordDT
 
 	return medicalRecord, nil
 }
+
+func (du *medicalRecordUsecase) UpdatePaymentStatus(id string) (medicalRecordDTO.Medical_Record, error) {
+	var medicalRecord medicalRecordDTO.Medical_Record
+	var err error
+
+	if medicalRecord, err = du.medicalRecordRepo.UpdatePaymentToDone(id); err != nil {
+		return medicalRecordDTO.Medical_Record{}, err
+	}
+
+	return medicalRecord, nil
+}

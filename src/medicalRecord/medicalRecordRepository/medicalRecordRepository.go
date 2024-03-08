@@ -5,7 +5,6 @@ import (
 	"avengers-clinic/src/medicalRecord"
 	"database/sql"
 	"errors"
-	"fmt"
 )
 
 type medicalRecordRepository struct {
@@ -61,14 +60,9 @@ func (dr *medicalRecordRepository) AddMedicalRecord(req medicalRecordDTO.Medical
 
 		// In case the payment status set to true in the request body
 		if req.Payment_Status {
-			fmt.Printf("medicineDetail.Stock %d - md.Quantity %d", medicineDetail.Medicine_Stock, md.Quantity)
-			medicineDetail.Medicine_Stock -= md.Quantity
-
-			// Update stock
-			query = "UPDATE medicines SET stock = $1 WHERE id = $2 RETURNING stock"
-			err = tx.QueryRow(query, medicineDetail.Medicine_Stock, md.Medicine_ID).Scan(&medicineDetail.Medicine_Stock)
+			// Update medicine stock
+			medicineDetail.Medicine_Stock, err = dr.UpdateMedicineStock(tx, medicineDetail.Medicine_Stock, md.Quantity, md.Medicine_ID)
 			if err != nil {
-				tx.Rollback()
 				return medicalRecordDTO.Medical_Record{}, err
 			}
 		}
@@ -119,10 +113,14 @@ func (dr *medicalRecordRepository) AddMedicalRecord(req medicalRecordDTO.Medical
 
 func (dr *medicalRecordRepository) RetrieveMedicalRecords() ([]medicalRecordDTO.Medical_Record, error) {
 	var mrs []medicalRecordDTO.Medical_Record
+	tx, err := dr.db.Begin()
+	if err != nil {
+		return []medicalRecordDTO.Medical_Record{}, err
+	}
 
 	// Getting medical_record values
 	query := "SELECT id, booking_id, diagnosis_results, created_at FROM medical_records WHERE deleted_at IS null"
-	row, err := dr.db.Query(query)
+	row, err := tx.Query(query)
 	if err != nil {
 		return []medicalRecordDTO.Medical_Record{}, err
 	}
@@ -142,12 +140,12 @@ func (dr *medicalRecordRepository) RetrieveMedicalRecords() ([]medicalRecordDTO.
 	// Here we try to assign medicine_details and action_details for each medical record in the mr array
 	for i := range mrs {
 		// Get and assign medical record medicine details into medical record struct
-		if mrs[i].Medicine_Details, err = dr.GetMedicineDetails(dr.db, mrs[i].ID); err != nil {
+		if mrs[i].Medicine_Details, err = dr.GetMedicineDetails(tx, mrs[i].ID); err != nil {
 			return []medicalRecordDTO.Medical_Record{}, err
 		}
 
 		// Get and assign medical record action details into medical record struct
-		if mrs[i].Action_Details, err = dr.GetActionDetails(dr.db, mrs[i].ID); err != nil {
+		if mrs[i].Action_Details, err = dr.GetActionDetails(tx, mrs[i].ID); err != nil {
 			return []medicalRecordDTO.Medical_Record{}, err
 		}
 	}
@@ -163,21 +161,25 @@ func (dr *medicalRecordRepository) RetrieveMedicalRecords() ([]medicalRecordDTO.
 
 func (dr *medicalRecordRepository) RetrieveMedicalRecordByID(id string) (medicalRecordDTO.Medical_Record, error) {
 	var mr medicalRecordDTO.Medical_Record
+	tx, err := dr.db.Begin()
+	if err != nil {
+		return medicalRecordDTO.Medical_Record{}, err
+	}
 
 	// Getting medical record values
 	query := "SELECT id, booking_id, diagnosis_results, created_at FROM medical_records WHERE id = $1 AND deleted_at IS null"
-	err := dr.db.QueryRow(query, id).Scan(&mr.ID, &mr.Booking_ID, &mr.Diagnosis_Result, &mr.Created_At)
+	err = tx.QueryRow(query, id).Scan(&mr.ID, &mr.Booking_ID, &mr.Diagnosis_Result, &mr.Created_At)
 	if err != nil {
 		return medicalRecordDTO.Medical_Record{}, err
 	}
 
 	// Get and assign medical record medicine details into medical record struct
-	if mr.Medicine_Details, err = dr.GetMedicineDetails(dr.db, mr.ID); err != nil {
+	if mr.Medicine_Details, err = dr.GetMedicineDetails(tx, mr.ID); err != nil {
 		return medicalRecordDTO.Medical_Record{}, err
 	}
 
 	// Get and assign medical record action details into medical record struct
-	if mr.Action_Details, err = dr.GetActionDetails(dr.db, mr.ID); err != nil {
+	if mr.Action_Details, err = dr.GetActionDetails(tx, mr.ID); err != nil {
 		return medicalRecordDTO.Medical_Record{}, err
 	}
 
@@ -187,7 +189,7 @@ func (dr *medicalRecordRepository) RetrieveMedicalRecordByID(id string) (medical
 	return mr, nil
 }
 
-func (dr *medicalRecordRepository) GetMedicineDetails(db *sql.DB, mrID string) ([]medicalRecordDTO.Medical_Record_Medicine_Details, error) {
+func (dr *medicalRecordRepository) GetMedicineDetails(db *sql.Tx, mrID string) ([]medicalRecordDTO.Medical_Record_Medicine_Details, error) {
 	var medicineDetails []medicalRecordDTO.Medical_Record_Medicine_Details
 	var query string
 
@@ -196,6 +198,7 @@ func (dr *medicalRecordRepository) GetMedicineDetails(db *sql.DB, mrID string) (
 	if err != nil {
 		return []medicalRecordDTO.Medical_Record_Medicine_Details{}, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var md medicalRecordDTO.Medical_Record_Medicine_Details
@@ -210,6 +213,7 @@ func (dr *medicalRecordRepository) GetMedicineDetails(db *sql.DB, mrID string) (
 		query = "SELECT name, stock, price from medicines WHERE id = $1"
 		err = db.QueryRow(query, medicineDetails[i].Medicine_ID).Scan(&medicineDetails[i].Medicine_Name, &medicineDetails[i].Medicine_Stock, &medicineDetails[i].Medicine_Price)
 		if err != nil {
+
 			return []medicalRecordDTO.Medical_Record_Medicine_Details{}, err
 		}
 	}
@@ -217,7 +221,7 @@ func (dr *medicalRecordRepository) GetMedicineDetails(db *sql.DB, mrID string) (
 	return medicineDetails, nil
 }
 
-func (dr *medicalRecordRepository) GetActionDetails(db *sql.DB, mrID string) ([]medicalRecordDTO.Medical_Record_Action_Details, error) {
+func (dr *medicalRecordRepository) GetActionDetails(db *sql.Tx, mrID string) ([]medicalRecordDTO.Medical_Record_Action_Details, error) {
 	var actionDetails []medicalRecordDTO.Medical_Record_Action_Details
 	var query string
 
@@ -226,6 +230,7 @@ func (dr *medicalRecordRepository) GetActionDetails(db *sql.DB, mrID string) ([]
 	if err != nil {
 		return []medicalRecordDTO.Medical_Record_Action_Details{}, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var ad medicalRecordDTO.Medical_Record_Action_Details
@@ -245,4 +250,82 @@ func (dr *medicalRecordRepository) GetActionDetails(db *sql.DB, mrID string) ([]
 	}
 
 	return actionDetails, nil
+}
+
+func (dr *medicalRecordRepository) UpdatePaymentToDone(id string) (medicalRecordDTO.Medical_Record, error) {
+	var medicalRecord medicalRecordDTO.Medical_Record
+	medicalRecord.ID = id
+	tx, err := dr.db.Begin()
+	if err != nil {
+		return medicalRecordDTO.Medical_Record{}, err
+	}
+
+	// Populate medical record struct fields
+	query := "SELECT id, booking_id, diagnosis_results, created_at FROM medical_records WHERE id = $1 AND deleted_at IS null"
+	err = tx.QueryRow(query, id).Scan(&medicalRecord.ID, &medicalRecord.Booking_ID, &medicalRecord.Diagnosis_Result, &medicalRecord.Created_At)
+	if err != nil {
+		return medicalRecordDTO.Medical_Record{}, err
+	}
+
+	// Update payment status
+	query = "UPDATE medical_records SET payment_status = true WHERE id = $1"
+	_, err = tx.Exec(query, id)
+	if err != nil {
+		tx.Rollback()
+		return medicalRecordDTO.Medical_Record{}, err
+	}
+
+	medicalRecord.Payment_Status = true
+
+	//var mds []medicalRecordDTO.Medical_Record_Medicine_Details
+	mds, err := dr.GetMedicineDetails(tx, id)
+	if err != nil {
+		tx.Rollback()
+		return medicalRecordDTO.Medical_Record{}, err
+	}
+
+	for _, md := range mds {
+		stockResult, err := dr.UpdateMedicineStock(tx, md.Medicine_Stock, md.Quantity, md.Medicine_ID)
+		if err != nil {
+			tx.Rollback()
+			return medicalRecordDTO.Medical_Record{}, err
+		}
+
+		md.Medicine_Stock = stockResult
+	}
+
+	// Append medicine details into medical record
+	medicalRecord.Medicine_Details = mds
+
+	// Populate action details
+	var ads []medicalRecordDTO.Medical_Record_Action_Details
+	ads, err = dr.GetActionDetails(tx, id)
+	if err != nil {
+		tx.Rollback()
+		return medicalRecordDTO.Medical_Record{}, err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return medicalRecordDTO.Medical_Record{}, err
+	}
+
+	// Append action details into medical record
+	medicalRecord.Action_Details = ads
+
+	return medicalRecord, nil
+
+}
+
+func (dr *medicalRecordRepository) UpdateMedicineStock(tx *sql.Tx, stock, quantity int, medicineID string) (int, error) {
+	stock -= quantity
+
+	// Update stock
+	query := "UPDATE medicines SET stock = $1 WHERE id = $2"
+	_, err := tx.Exec(query, stock, medicineID)
+	if err != nil {
+		tx.Rollback()
+		return 0, err
+	}
+
+	return stock, nil
 }
