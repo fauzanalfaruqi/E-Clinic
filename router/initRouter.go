@@ -16,6 +16,9 @@ import (
 	"avengers-clinic/src/booking/bookingDelivery"
 	"avengers-clinic/src/booking/bookingRepository"
 	"avengers-clinic/src/booking/bookingUsecase"
+	"avengers-clinic/src/medicalRecord/medicalRecordDelivery"
+	"avengers-clinic/src/medicalRecord/medicalRecordRepository"
+	"avengers-clinic/src/medicalRecord/medicalRecordUsecase"
 	"database/sql"
 
 	"github.com/gin-gonic/gin"
@@ -41,4 +44,8 @@ func InitRoute(v1Group *gin.RouterGroup, db *sql.DB) {
 	bookingRepo := bookingRepository.NewBookingRepository(db)
 	bookingUC := bookingUsecase.NewBookingUsecase(bookingRepo, scheduleRepo)
 	bookingDelivery.NewBookingDelivery(v1Group, bookingUC)
+
+	medicalRecordRepository := medicalRecordRepository.NewMedicalRecordRepository(db)
+	medicalRecordUsecase := medicalRecordUsecase.NewMedicalRecordUsecase(medicalRecordRepository)
+	medicalRecordDelivery.NewMedicalRecordDelivery(v1Group, medicalRecordUsecase)
 }
