@@ -3,6 +3,7 @@ package medicalRecordUsecase
 import (
 	"avengers-clinic/model/dto/medicalRecordDTO"
 	"avengers-clinic/src/medicalRecord"
+	"time"
 )
 
 type medicalRecordUsecase struct {
@@ -30,6 +31,14 @@ func (du *medicalRecordUsecase) CreateMedicalRecord(req medicalRecordDTO.Medical
 	// 		return medicalRecordDTO.Medical_Record{}, errors.New("err1")
 	// 	}
 	// }
+
+	if req.Created_At == "" {
+		req.Created_At = time.Now().Format("2006-01-02 15:04:05")
+	}
+
+	if req.Updated_At == "" {
+		req.Updated_At = time.Now().Format("2006-01-02 15:04:05")
+	}
 
 	medicalRecord, err := du.medicalRecordRepo.AddMedicalRecord(req)
 	if err != nil {

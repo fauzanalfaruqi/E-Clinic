@@ -6,6 +6,7 @@ import (
 	"avengers-clinic/src/medicalRecord"
 	"database/sql"
 	"errors"
+	"time"
 )
 
 type medicalRecordRepository struct {
@@ -27,8 +28,8 @@ func (dr *medicalRecordRepository) AddMedicalRecord(req medicalRecordDTO.Medical
 	}
 
 	// Inserting medical record values
-	query := "INSERT INTO medical_records (booking_id, diagnosis_results, total_medicine, total_action, total_amount, payment_status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at, payment_status"
-	if err := tx.QueryRow(query, req.Booking_ID, req.Diagnosis_Result, 0, 0, 0, req.Payment_Status).Scan(&medicalRecord.ID, &medicalRecord.Created_At, &medicalRecord.Payment_Status); err != nil {
+	query := "INSERT INTO medical_records (booking_id, diagnosis_results, total_medicine, total_action, total_amount, payment_status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, payment_status, created_at, updated_at"
+	if err := tx.QueryRow(query, req.Booking_ID, req.Diagnosis_Result, 0, 0, 0, req.Payment_Status, req.Created_At, req.Updated_At).Scan(&medicalRecord.ID, &medicalRecord.Payment_Status, &medicalRecord.Created_At, &medicalRecord.Updated_At); err != nil {
 		tx.Rollback()
 		return medicalRecordDTO.Medical_Record{}, err
 	}
@@ -306,15 +307,13 @@ func (dr *medicalRecordRepository) UpdatePaymentToDone(id string) (medicalRecord
 		tx.Rollback()
 		return medicalRecordDTO.Medical_Record{}, errors.New(constants.ErrPaymentAlreadyTrue)
 	}
-	// Update payment status
-	query = "UPDATE medical_records SET payment_status = true WHERE id = $1"
-	_, err = tx.Exec(query, id)
+	// Update payment status and updated at values
+	query = "UPDATE medical_records SET payment_status = true, updated_at = $2 WHERE id = $1 RETURNING payment_status, updated_at"
+	err = tx.QueryRow(query, id, time.Now().Format("2006-01-02 15:04:05")).Scan(&medicalRecord.Payment_Status, &medicalRecord.Updated_At)
 	if err != nil {
 		tx.Rollback()
 		return medicalRecordDTO.Medical_Record{}, err
 	}
-
-	medicalRecord.Payment_Status = true
 
 	//var mds []medicalRecordDTO.Medical_Record_Medicine_Details
 	mds, err := dr.GetMedicineDetails(tx, id)
