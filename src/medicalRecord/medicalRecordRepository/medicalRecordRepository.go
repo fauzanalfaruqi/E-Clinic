@@ -2,6 +2,7 @@ package medicalRecordRepository
 
 import (
 	"avengers-clinic/model/dto/medicalRecordDTO"
+	"avengers-clinic/pkg/constants"
 	"avengers-clinic/src/medicalRecord"
 	"database/sql"
 	"errors"
@@ -26,8 +27,8 @@ func (dr *medicalRecordRepository) AddMedicalRecord(req medicalRecordDTO.Medical
 	}
 
 	// Inserting medical record values
-	query := "INSERT INTO medical_records (booking_id, diagnosis_results, total_medicine, total_action, total_amount, payment_status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at"
-	if err := tx.QueryRow(query, req.Booking_ID, req.Diagnosis_Result, 0, 0, 0, req.Payment_Status).Scan(&medicalRecord.ID, &medicalRecord.Created_At); err != nil {
+	query := "INSERT INTO medical_records (booking_id, diagnosis_results, total_medicine, total_action, total_amount, payment_status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at, payment_status"
+	if err := tx.QueryRow(query, req.Booking_ID, req.Diagnosis_Result, 0, 0, 0, req.Payment_Status).Scan(&medicalRecord.ID, &medicalRecord.Created_At, &medicalRecord.Payment_Status); err != nil {
 		tx.Rollback()
 		return medicalRecordDTO.Medical_Record{}, err
 	}
@@ -49,6 +50,18 @@ func (dr *medicalRecordRepository) AddMedicalRecord(req medicalRecordDTO.Medical
 		if err != nil {
 			tx.Rollback()
 			return medicalRecordDTO.Medical_Record{}, err
+		}
+
+		// Check if the stock is empty
+		if medicineDetail.Medicine_Stock <= 0 {
+			tx.Rollback()
+			return medicalRecordDTO.Medical_Record{}, errors.New(constants.ErrNoStockAvailable)
+		}
+
+		// Check if the quantity amount is greater than stock available
+		if md.Quantity > medicineDetail.Medicine_Stock {
+			tx.Rollback()
+			return medicalRecordDTO.Medical_Record{}, errors.New(constants.ErrQuantityGreaterThanStock)
 		}
 
 		// Insert medicine details
@@ -105,7 +118,9 @@ func (dr *medicalRecordRepository) AddMedicalRecord(req medicalRecordDTO.Medical
 		return medicalRecordDTO.Medical_Record{}, err
 	}
 
-	tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return medicalRecordDTO.Medical_Record{}, err
+	}
 
 	//mr.Medicine_Details = append(mr.Medicine_Details, medicineDetails...)
 	return medicalRecord, nil
@@ -117,6 +132,12 @@ func (dr *medicalRecordRepository) RetrieveMedicalRecords() ([]medicalRecordDTO.
 	if err != nil {
 		return []medicalRecordDTO.Medical_Record{}, err
 	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
 
 	// Getting medical_record values
 	query := "SELECT id, booking_id, diagnosis_results, created_at FROM medical_records WHERE deleted_at IS null"
@@ -150,6 +171,10 @@ func (dr *medicalRecordRepository) RetrieveMedicalRecords() ([]medicalRecordDTO.
 		}
 	}
 
+	if err = tx.Commit(); err != nil {
+		return []medicalRecordDTO.Medical_Record{}, err
+	}
+
 	// If received medical_record data in db is not empty, return the data
 	if len(mrs) > 0 {
 		return mrs, nil
@@ -165,6 +190,12 @@ func (dr *medicalRecordRepository) RetrieveMedicalRecordByID(id string) (medical
 	if err != nil {
 		return medicalRecordDTO.Medical_Record{}, err
 	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
 
 	// Getting medical record values
 	query := "SELECT id, booking_id, diagnosis_results, created_at FROM medical_records WHERE id = $1 AND deleted_at IS null"
@@ -186,6 +217,9 @@ func (dr *medicalRecordRepository) RetrieveMedicalRecordByID(id string) (medical
 	// Assign medical record medicine details into medical record struct at the current iteration
 	//mr.Action_Details = mrads
 
+	if err = tx.Commit(); err != nil {
+		return medicalRecordDTO.Medical_Record{}, err
+	}
 	return mr, nil
 }
 
@@ -221,12 +255,12 @@ func (dr *medicalRecordRepository) GetMedicineDetails(db *sql.Tx, mrID string) (
 	return medicineDetails, nil
 }
 
-func (dr *medicalRecordRepository) GetActionDetails(db *sql.Tx, mrID string) ([]medicalRecordDTO.Medical_Record_Action_Details, error) {
+func (dr *medicalRecordRepository) GetActionDetails(tx *sql.Tx, mrID string) ([]medicalRecordDTO.Medical_Record_Action_Details, error) {
 	var actionDetails []medicalRecordDTO.Medical_Record_Action_Details
 	var query string
 
 	query = "SELECT id, action_id, created_at FROM medical_record_action_details WHERE medical_record_id = $1"
-	rows, err := db.Query(query, mrID)
+	rows, err := tx.Query(query, mrID)
 	if err != nil {
 		return []medicalRecordDTO.Medical_Record_Action_Details{}, err
 	}
@@ -243,7 +277,7 @@ func (dr *medicalRecordRepository) GetActionDetails(db *sql.Tx, mrID string) ([]
 
 	for i := range actionDetails {
 		query = "SELECT name, price, description from actions WHERE id = $1"
-		err = db.QueryRow(query, actionDetails[i].Action_ID).Scan(&actionDetails[i].Action_Name, &actionDetails[i].Action_Price, &actionDetails[i].Action_Description)
+		err = tx.QueryRow(query, actionDetails[i].Action_ID).Scan(&actionDetails[i].Action_Name, &actionDetails[i].Action_Price, &actionDetails[i].Action_Description)
 		if err != nil {
 			return []medicalRecordDTO.Medical_Record_Action_Details{}, err
 		}
@@ -261,12 +295,17 @@ func (dr *medicalRecordRepository) UpdatePaymentToDone(id string) (medicalRecord
 	}
 
 	// Populate medical record struct fields
-	query := "SELECT id, booking_id, diagnosis_results, created_at FROM medical_records WHERE id = $1 AND deleted_at IS null"
-	err = tx.QueryRow(query, id).Scan(&medicalRecord.ID, &medicalRecord.Booking_ID, &medicalRecord.Diagnosis_Result, &medicalRecord.Created_At)
+	query := "SELECT id, booking_id, diagnosis_results, payment_status, created_at FROM medical_records WHERE id = $1 AND deleted_at IS null"
+	err = tx.QueryRow(query, id).Scan(&medicalRecord.ID, &medicalRecord.Booking_ID, &medicalRecord.Diagnosis_Result, &medicalRecord.Payment_Status, &medicalRecord.Created_At)
 	if err != nil {
+		tx.Rollback()
 		return medicalRecordDTO.Medical_Record{}, err
 	}
 
+	if medicalRecord.Payment_Status {
+		tx.Rollback()
+		return medicalRecordDTO.Medical_Record{}, errors.New(constants.ErrPaymentAlreadyTrue)
+	}
 	// Update payment status
 	query = "UPDATE medical_records SET payment_status = true WHERE id = $1"
 	_, err = tx.Exec(query, id)
@@ -284,14 +323,14 @@ func (dr *medicalRecordRepository) UpdatePaymentToDone(id string) (medicalRecord
 		return medicalRecordDTO.Medical_Record{}, err
 	}
 
-	for _, md := range mds {
-		stockResult, err := dr.UpdateMedicineStock(tx, md.Medicine_Stock, md.Quantity, md.Medicine_ID)
+	for i := range mds {
+		stockResult, err := dr.UpdateMedicineStock(tx, mds[i].Medicine_Stock, mds[i].Quantity, mds[i].Medicine_ID)
 		if err != nil {
 			tx.Rollback()
 			return medicalRecordDTO.Medical_Record{}, err
 		}
 
-		md.Medicine_Stock = stockResult
+		mds[i].Medicine_Stock = stockResult
 	}
 
 	// Append medicine details into medical record
@@ -317,10 +356,23 @@ func (dr *medicalRecordRepository) UpdatePaymentToDone(id string) (medicalRecord
 }
 
 func (dr *medicalRecordRepository) UpdateMedicineStock(tx *sql.Tx, stock, quantity int, medicineID string) (int, error) {
+
+	// Check if the stock is empty
+	if stock <= 0 {
+		tx.Rollback()
+		return 0, errors.New(constants.ErrNoStockAvailable)
+	}
+
+	// Check if the quantity amount is greater than stock available
+	if quantity > stock {
+		tx.Rollback()
+		return 0, errors.New(constants.ErrQuantityGreaterThanStock)
+	}
+
 	stock -= quantity
 
 	// Update stock
-	query := "UPDATE medicines SET stock = $1 WHERE id = $2"
+	query := "UPDATE medicines SET stock = $1 WHERE id = $2 and deleted_at IS null"
 	_, err := tx.Exec(query, stock, medicineID)
 	if err != nil {
 		tx.Rollback()
