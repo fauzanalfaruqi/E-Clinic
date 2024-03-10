@@ -102,7 +102,7 @@ func (dd *medicalRecordDelivery) updatePaymentStatus(ctx *gin.Context) {
 	mr, err = dd.medicalRecordUC.UpdatePaymentStatus(id)
 	if err != nil {
 		if err.Error() == constants.ErrPaymentAlreadyTrue {
-			json.NewResponseBadRequest(ctx, []json.ValidationField{}, "The payment has already been set to true.", constants.MedicalRecordService, "01")
+			json.NewResponseBadRequest(ctx, []json.ValidationField{}, constants.ErrPaymentAlreadyTrue, constants.MedicalRecordService, "01")
 			return
 		}
 
