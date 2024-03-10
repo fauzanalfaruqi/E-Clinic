@@ -91,7 +91,11 @@ func (usecase *actionUsecase) Update(req actionDto.UpdateRequest) (actionDto.Act
 }
 
 func (usecase *actionUsecase) Delete(actionID string) error {
-	err := usecase.actionRepo.Delete(actionID)
+	_, err := usecase.actionRepo.GetByID(actionID)
+	if err != nil {
+		return err
+	}
+	err = usecase.actionRepo.Delete(actionID)
 	if err != nil {
 		return err
 	}
@@ -99,7 +103,11 @@ func (usecase *actionUsecase) Delete(actionID string) error {
 }
 
 func (usecase *actionUsecase) SoftDelete(actionID string) error {
-	err := usecase.actionRepo.SoftDelete(actionID)
+	_, err := usecase.actionRepo.GetByID(actionID)
+	if err != nil {
+		return err
+	}
+	err = usecase.actionRepo.SoftDelete(actionID)
 	if err != nil {
 		return err
 	}
@@ -107,7 +115,11 @@ func (usecase *actionUsecase) SoftDelete(actionID string) error {
 }
 
 func (usecase *actionUsecase) Restore(actionID string) error {
-	err := usecase.actionRepo.Restore(actionID)
+	_, err := usecase.actionRepo.GetTrashByID(actionID)
+	if err != nil {
+		return err
+	}
+	err = usecase.actionRepo.Restore(actionID)
 	if err != nil {
 		return err
 	}

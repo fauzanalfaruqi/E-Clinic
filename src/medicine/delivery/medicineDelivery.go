@@ -3,6 +3,7 @@ package delivery
 import (
 	"avengers-clinic/model/dto"
 	"avengers-clinic/model/dto/json"
+	"avengers-clinic/pkg/constants"
 	"avengers-clinic/pkg/utils"
 	"avengers-clinic/src/medicine"
 	"database/sql"
@@ -32,14 +33,14 @@ func NewMedicineDelivery(v1Group *gin.RouterGroup, medicineUC medicine.MedicineU
 func (m *medicineDelivery) getAll(ctx *gin.Context) {
 	getAll, err := m.medicineUC.GetAll()
 	if err != nil {
-		json.NewResponseError(ctx, err.Error(), "01", "01")
+		json.NewResponseError(ctx, err.Error(), constants.MedicineService, "01")
 		return
 	}
 	if len(getAll) == 0 {
-		json.NewResponseForbidden(ctx, "medicines not found", "01", "01")
+		json.NewResponseForbidden(ctx, "medicines not found", constants.MedicineService, "01")
 		return
 	}
-	json.NewResponseSuccess(ctx, getAll, "success", "01", "01")
+	json.NewResponseSuccess(ctx, getAll, "success", constants.MedicineService, "01")
 }
 
 func (m *medicineDelivery) getById(ctx *gin.Context) {
@@ -47,31 +48,31 @@ func (m *medicineDelivery) getById(ctx *gin.Context) {
 	getById, err := m.medicineUC.GetById(id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			json.NewResponseForbidden(ctx, "medicine not found", "01", "01")
+			json.NewResponseForbidden(ctx, "medicine not found", constants.MedicineService, "01")
 			return
 		}
-		json.NewResponseError(ctx, err.Error(), "01", "01")
+		json.NewResponseError(ctx, err.Error(), constants.MedicineService, "01")
 		return
 	}
-	json.NewResponseSuccess(ctx, getById, "success", "01", "01")
+	json.NewResponseSuccess(ctx, getById, "success", constants.MedicineService, "01")
 }
 
 func (m *medicineDelivery) create(ctx *gin.Context) {
 	var medicine dto.MedicineRequest
 	if err := ctx.ShouldBindJSON(&medicine); err != nil {
-		json.NewResponseError(ctx, err.Error(), "01", "01")
+		json.NewResponseError(ctx, err.Error(), constants.MedicineService, "01")
 		return
 	}
 	if err := utils.Validated(medicine); err != nil {
-		json.NewResponseBadRequest(ctx, err, "bad request", "01", "01")
+		json.NewResponseBadRequest(ctx, err, "bad request", constants.MedicineService, "01")
 		return
 	}
 	insert, err := m.medicineUC.CreateRecord(medicine)
 	if err != nil {
-		json.NewResponseError(ctx, err.Error(), "01", "01")
+		json.NewResponseError(ctx, err.Error(), constants.MedicineService, "01")
 		return
 	}
-	json.NewResponseCreated(ctx, insert, "succesfully insert new medicine", "01", "01")
+	json.NewResponseCreated(ctx, insert, "succesfully insert new medicine", constants.MedicineService, "01")
 }
 
 func (m *medicineDelivery) update(ctx *gin.Context) {
@@ -79,20 +80,20 @@ func (m *medicineDelivery) update(ctx *gin.Context) {
 	var medicine dto.UpdateRequest
 	medicine.Id = id
 	if err := ctx.ShouldBindJSON(&medicine); err != nil {
-		json.NewResponseError(ctx, err.Error(), "01", "01")
+		json.NewResponseError(ctx, err.Error(), constants.MedicineService, "01")
 		return
 	}
 	insert, err := m.medicineUC.UpdateRecord(medicine)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			json.NewResponseForbidden(ctx, "medicine not found", "01", "01")
+			json.NewResponseForbidden(ctx, "medicine not found", constants.MedicineService, "01")
 			return
 		}
 
-		json.NewResponseError(ctx, err.Error(), "01", "01")
+		json.NewResponseError(ctx, err.Error(), constants.MedicineService, "01")
 		return
 	}
-	json.NewResponseSuccess(ctx, insert, "success update medicine", "01", "01")
+	json.NewResponseSuccess(ctx, insert, "success update medicine", constants.MedicineService, "01")
 
 }
 
@@ -101,38 +102,38 @@ func (m *medicineDelivery) delete(ctx *gin.Context) {
 	err := m.medicineUC.DeleteRecord(id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			json.NewResponseForbidden(ctx, "medicine not found", "01", "01")
+			json.NewResponseForbidden(ctx, "medicine not found", constants.MedicineService, "01")
 			return
 		}
 		
-		json.NewResponseError(ctx, err.Error(), "01", "01")
+		json.NewResponseError(ctx, err.Error(), constants.MedicineService, "01")
 		return
 	}
 
-	json.NewResponseSuccess(ctx, id, "success delete medicine", "01", "01")
+	json.NewResponseSuccess(ctx, id, "success delete medicine", constants.MedicineService, "01")
 }
 
 func (m *medicineDelivery) trash(ctx *gin.Context) {
 	getAll, err := m.medicineUC.TrashRecord()
 	if err != nil {
-		json.NewResponseError(ctx, err.Error(), "01", "01")
+		json.NewResponseError(ctx, err.Error(), constants.MedicineService, "01")
 		return
 	}
 
 	if len(getAll) == 0 {
-		json.NewResponseForbidden(ctx, "medicines not found", "01", "01")
+		json.NewResponseForbidden(ctx, "medicines not found", constants.MedicineService, "01")
 		return
 	}
 
-	json.NewResponseSuccess(ctx, getAll, "success", "01", "01")
+	json.NewResponseSuccess(ctx, getAll, "success", constants.MedicineService, "01")
 }
 func (m *medicineDelivery) restore(ctx *gin.Context) {
 	id := ctx.Param("id")
 	err := m.medicineUC.RestoreRecord(id)
 	if err != nil {
-		json.NewResponseError(ctx, err.Error(), "01", "01")
+		json.NewResponseError(ctx, err.Error(), constants.MedicineService, "01")
 		return
 	}
 
-	json.NewResponseSuccess(ctx, id, "success restore medicine", "01", "01")
+	json.NewResponseSuccess(ctx, id, "success restore medicine", constants.MedicineService, "01")
 }

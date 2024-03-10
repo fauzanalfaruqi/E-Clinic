@@ -28,14 +28,6 @@ func Validated(s interface{}) []json.ValidationField {
 	return errors
 }
 
-func regexValidate(fl validator.FieldLevel) bool {
-	value := fl.Field().String()
-	pattern := fl.Param()
-
-	matched, _ := regexp.MatchString(pattern, value)
-	return matched
-}
-
 func getErrorMessage(err validator.FieldError) string {
 	messages := map[string]string{
 		"boolean": "Field must be boolean",
@@ -78,4 +70,12 @@ func enumValidator(fl validator.FieldLevel) bool {
 		}
 	}
 	return isValid
+}
+
+func regexValidate(fl validator.FieldLevel) bool {
+	value := fl.Field().String()
+	pattern := fl.Param()
+
+	matched, _ := regexp.MatchString(pattern, value)
+	return matched
 }

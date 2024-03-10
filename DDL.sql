@@ -60,6 +60,7 @@ CREATE TABLE mst_schedule(
   updated_at TIMESTAMP,
   deleted_at TIMESTAMP
 );
+
 CREATE TABLE bookings (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   patient_id uuid NOT NULL REFERENCES users (id),

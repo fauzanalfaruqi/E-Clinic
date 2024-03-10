@@ -3,9 +3,9 @@ package actionDelivery
 import (
 	"avengers-clinic/model/dto/actionDto"
 	"avengers-clinic/model/dto/json"
-	"avengers-clinic/pkg/middleware"
 	"avengers-clinic/pkg/utils"
 	"avengers-clinic/src/action"
+	"database/sql"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,13 +18,13 @@ func NewActionDelivery(v1Group *gin.RouterGroup, actionUC action.ActionUsecase) 
 	handler := actionDelivery{actionUC: actionUC}
 	actionGroup := v1Group.Group("/actions")
 	{
-		actionGroup.GET("", middleware.JwtAuth("ADMIN"), handler.GetAll)
-		actionGroup.GET("/:id", middleware.JwtAuth("ADMIN"), handler.GetByID)
-		actionGroup.POST("/", middleware.JwtAuth("ADMIN"), handler.Create)
-		actionGroup.PUT("/:id", middleware.JwtAuth("ADMIN"), handler.Update)
-		actionGroup.DELETE("/:id", middleware.JwtAuth("ADMIN"), handler.Delete)
-		actionGroup.DELETE("/:id/trash", middleware.JwtAuth("ADMIN"), handler.SoftDelete)
-		actionGroup.PUT("/:id/restore", middleware.JwtAuth("ADMIN"), handler.Restore)
+		actionGroup.GET("", handler.GetAll)
+		actionGroup.GET("/:id", handler.GetByID)
+		actionGroup.POST("/", handler.Create)
+		actionGroup.PUT("/:id", handler.Update)
+		actionGroup.DELETE("/:id", handler.Delete)
+		actionGroup.DELETE("/:id/trash", handler.SoftDelete)
+		actionGroup.PUT("/:id/restore", handler.Restore)
 	}
 }
 
@@ -36,7 +36,7 @@ func (delivery *actionDelivery) GetAll(c *gin.Context) {
 	}
 
 	if len(response) == 0 {
-		json.NewResponseSuccess(c, nil, "Actions not found", "01", "01")
+		json.NewResponseForbidden(c, "Actions not found", "01", "01")
 		return
 	}
 
@@ -48,7 +48,7 @@ func (delivery *actionDelivery) GetByID(c *gin.Context) {
 	response, err := delivery.actionUC.GetByID(actionID)
 	if err != nil {
 		if err.Error() == "1" {
-			json.NewResponseSuccess(c, nil, "Action not found", "01", "01")
+			json.NewResponseForbidden(c, "Action not found", "01", "01")
 			return
 		}
 
@@ -101,7 +101,7 @@ func (delivery *actionDelivery) Update(c *gin.Context) {
 	response, err := delivery.actionUC.Update(request)
 	if err != nil {
 		if err.Error() == "1" {
-			json.NewResponseSuccess(c, nil, "Action not found", "01", "03")
+			json.NewResponseForbidden(c, "Action not found", "01", "03")
 			return
 		}
 
@@ -121,7 +121,11 @@ func (delivery *actionDelivery) Delete(c *gin.Context) {
 	actionID := c.Param("id")
 	err := delivery.actionUC.Delete(actionID)
 	if err != nil {
-		json.NewResponseError(c, err.Error(), "01", "01")
+		if err == sql.ErrNoRows {
+			json.NewResponseForbidden(c, "Action not found", "01", "01")
+		}
+
+		json.NewResponseError(c, err.Error(), "01", "02")
 		return
 	}
 	json.NewResponseSuccess(c, nil, "Action deleted successfully", "01", "01")
@@ -131,7 +135,11 @@ func (delivery *actionDelivery) SoftDelete(c *gin.Context) {
 	actionID := c.Param("id")
 	err := delivery.actionUC.SoftDelete(actionID)
 	if err != nil {
-		json.NewResponseError(c, err.Error(), "01", "01")
+		if err == sql.ErrNoRows {
+			json.NewResponseForbidden(c, "Action not found", "01", "01")
+		}
+
+		json.NewResponseError(c, err.Error(), "01", "02")
 		return
 	}
 	json.NewResponseSuccess(c, nil, "Action deleted successfully", "01", "01")
@@ -141,7 +149,11 @@ func (delivery *actionDelivery) Restore(c *gin.Context) {
 	actionID := c.Param("id")
 	err := delivery.actionUC.Restore(actionID)
 	if err != nil {
-		json.NewResponseError(c, err.Error(), "01", "01")
+		if err == sql.ErrNoRows {
+			json.NewResponseForbidden(c, "Action not found", "01", "01")
+		}
+
+		json.NewResponseError(c, err.Error(), "01", "02")
 		return
 	}
 	json.NewResponseSuccess(c, nil, "Action restored successfully", "01", "01")
