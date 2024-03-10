@@ -44,10 +44,6 @@ func (dd *medicalRecordDelivery) createMedicalRecord(ctx *gin.Context) {
 
 	medicalRecord, err := dd.medicalRecordUC.CreateMedicalRecord(req)
 	if err != nil {
-		// if err.Error() == "err1" {
-		// 	json.NewResponseBadRequest(ctx, nil, "required fields cannot be empty", "01", "01")
-		// 	return
-		// }
 		if err.Error() == constants.ErrNoStockAvailable {
 			json.NewResponseBadRequest(ctx, []json.ValidationField{}, constants.ErrNoStockAvailable, constants.MedicalRecordService, "03")
 			return
