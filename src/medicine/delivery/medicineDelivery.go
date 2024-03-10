@@ -6,7 +6,6 @@ import (
 	"avengers-clinic/pkg/utils"
 	"avengers-clinic/src/medicine"
 	"database/sql"
-	"fmt"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,9 +22,9 @@ func NewMedicineDelivery(v1Group *gin.RouterGroup, medicineUC medicine.MedicineU
 		medicineGroup.GET("/:id", handler.getById)
 		medicineGroup.POST("", handler.create)
 		medicineGroup.PUT("/:id", handler.update)
-		medicineGroup.DELETE("", handler.delete)
+		medicineGroup.DELETE("/:id", handler.delete)
 		medicineGroup.GET("/trash", handler.trash)
-		medicineGroup.PUT("/restore", handler.restore)
+		medicineGroup.PUT("/:id/restore", handler.restore)
 
 	}
 }
@@ -36,6 +35,10 @@ func (m *medicineDelivery) getAll(ctx *gin.Context) {
 		json.NewResponseError(ctx, err.Error(), "01", "01")
 		return
 	}
+	if len(getAll) == 0 {
+		json.NewResponseForbidden(ctx, "medicines not found", "01", "01")
+		return
+	}
 	json.NewResponseSuccess(ctx, getAll, "success", "01", "01")
 }
 
@@ -44,7 +47,7 @@ func (m *medicineDelivery) getById(ctx *gin.Context) {
 	getById, err := m.medicineUC.GetById(id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			json.NewResponseForbidden(ctx, "Id Not Found", "01", "01")
+			json.NewResponseForbidden(ctx, "medicine not found", "01", "01")
 			return
 		}
 		json.NewResponseError(ctx, err.Error(), "01", "01")
@@ -56,14 +59,13 @@ func (m *medicineDelivery) getById(ctx *gin.Context) {
 func (m *medicineDelivery) create(ctx *gin.Context) {
 	var medicine dto.MedicineRequest
 	if err := ctx.ShouldBindJSON(&medicine); err != nil {
-		json.NewResponseBadRequest(ctx, []json.ValidationField{}, "error insert new medicine", "01", "01")
+		json.NewResponseError(ctx, err.Error(), "01", "01")
 		return
 	}
 	if err := utils.Validated(medicine); err != nil {
 		json.NewResponseBadRequest(ctx, err, "bad request", "01", "01")
 		return
 	}
-	fmt.Println(medicine)
 	insert, err := m.medicineUC.CreateRecord(medicine)
 	if err != nil {
 		json.NewResponseError(ctx, err.Error(), "01", "01")
@@ -74,14 +76,19 @@ func (m *medicineDelivery) create(ctx *gin.Context) {
 
 func (m *medicineDelivery) update(ctx *gin.Context) {
 	id := ctx.Param("id")
-	var medicine dto.MedicineRequest
+	var medicine dto.UpdateRequest
 	medicine.Id = id
 	if err := ctx.ShouldBindJSON(&medicine); err != nil {
-		json.NewResponseBadRequest(ctx, []json.ValidationField{}, "bad request", "01", "01")
+		json.NewResponseError(ctx, err.Error(), "01", "01")
 		return
 	}
 	insert, err := m.medicineUC.UpdateRecord(medicine)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			json.NewResponseForbidden(ctx, "medicine not found", "01", "01")
+			return
+		}
+
 		json.NewResponseError(ctx, err.Error(), "01", "01")
 		return
 	}
@@ -90,20 +97,19 @@ func (m *medicineDelivery) update(ctx *gin.Context) {
 }
 
 func (m *medicineDelivery) delete(ctx *gin.Context) {
-
-	var prod dto.MedicineRequest
-	if err := ctx.ShouldBindJSON(&prod); err != nil {
-		json.NewResponseBadRequest(ctx, []json.ValidationField{}, "bad request", "01", "01")
-		fmt.Println(err.Error())
-		return
-	}
-	err := m.medicineUC.DeleteRecord(prod.Id)
+	id := ctx.Param("id")
+	err := m.medicineUC.DeleteRecord(id)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			json.NewResponseForbidden(ctx, "medicine not found", "01", "01")
+			return
+		}
+		
 		json.NewResponseError(ctx, err.Error(), "01", "01")
 		return
 	}
 
-	json.NewResponseSuccess(ctx, prod.Id, "success delete medicine", "01", "01")
+	json.NewResponseSuccess(ctx, id, "success delete medicine", "01", "01")
 }
 
 func (m *medicineDelivery) trash(ctx *gin.Context) {
@@ -113,21 +119,20 @@ func (m *medicineDelivery) trash(ctx *gin.Context) {
 		return
 	}
 
+	if len(getAll) == 0 {
+		json.NewResponseForbidden(ctx, "medicines not found", "01", "01")
+		return
+	}
+
 	json.NewResponseSuccess(ctx, getAll, "success", "01", "01")
 }
 func (m *medicineDelivery) restore(ctx *gin.Context) {
-
-	var prod dto.MedicineRequest
-	if err := ctx.ShouldBindJSON(&prod); err != nil {
-		json.NewResponseBadRequest(ctx, []json.ValidationField{}, "bad request", "01", "01")
-		fmt.Println(err.Error())
-		return
-	}
-	err := m.medicineUC.RestoreRecord(prod.Id)
+	id := ctx.Param("id")
+	err := m.medicineUC.RestoreRecord(id)
 	if err != nil {
 		json.NewResponseError(ctx, err.Error(), "01", "01")
 		return
 	}
 
-	json.NewResponseSuccess(ctx, prod.Id, "success restore medicine", "01", "01")
+	json.NewResponseSuccess(ctx, id, "success restore medicine", "01", "01")
 }

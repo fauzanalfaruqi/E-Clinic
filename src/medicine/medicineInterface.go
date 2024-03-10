@@ -18,7 +18,7 @@ type MedicineUsecase interface {
 	GetAll() ([]dto.MedicineResponse, error)
 	GetById(id string) (dto.MedicineResponse, error)
 	CreateRecord(medicine dto.MedicineRequest) (dto.MedicineResponse, error)
-	UpdateRecord(medicine dto.MedicineRequest) (dto.MedicineResponse, error)
+	UpdateRecord(medicine dto.UpdateRequest) (dto.MedicineResponse, error)
 	DeleteRecord(id string) error
 	TrashRecord() ([]dto.MedicineResponse, error)
 	RestoreRecord(id string) error
