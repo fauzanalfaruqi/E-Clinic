@@ -17,12 +17,13 @@ type (
 	}
 
 	Medical_Record_Request struct {
-		ID               string                     `json:"id,omitempty"`
 		Booking_ID       string                     `json:"booking_id" validate:"required"`
 		Diagnosis_Result string                     `json:"diagnosis_result" validate:"required"`
 		Payment_Status   bool                       `json:"payment_status,omitempty"`
 		Medicine_Details []Medicine_Details_Request `json:"medicine_details" validate:"dive"`
 		Action_Details   []Action_Details_Request   `json:"action_details" validate:"dive"`
+		Created_At       string                     `json:"created_at,omitempty"`
+		Updated_At       string                     `json:"updated_at,omitempty"`
 	}
 
 	Medical_Record_Medicine_Details struct {

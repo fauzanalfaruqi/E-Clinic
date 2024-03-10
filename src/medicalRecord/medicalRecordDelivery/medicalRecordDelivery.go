@@ -3,6 +3,7 @@ package medicalRecordDelivery
 import (
 	"avengers-clinic/model/dto/json"
 	"avengers-clinic/model/dto/medicalRecordDTO"
+	"avengers-clinic/pkg/constants"
 	"avengers-clinic/pkg/utils"
 	"avengers-clinic/src/medicalRecord"
 
@@ -32,26 +33,32 @@ func (dd *medicalRecordDelivery) createMedicalRecord(ctx *gin.Context) {
 	var err error
 
 	if err = ctx.ShouldBindJSON(&req); err != nil {
-		json.NewResponseBadRequest(ctx, nil, "Error when binding JSON.", "01", "01")
+		json.NewResponseError(ctx, err.Error(), constants.MedicalRecordService, "01")
 		return
 	}
 
 	if errV := utils.Validated(req); errV != nil {
-		json.NewResponseBadRequest(ctx, errV, "Bad request", "01", "01")
+		json.NewResponseBadRequest(ctx, errV, "bad request. required fields cannot be empty", constants.MedicalRecordService, "02")
 		return
 	}
 
 	medicalRecord, err := dd.medicalRecordUC.CreateMedicalRecord(req)
 	if err != nil {
-		// if err.Error() == "err1" {
-		// 	json.NewResponseBadRequest(ctx, nil, "required fields cannot be empty", "01", "01")
-		// 	return
-		// }
-		json.NewResponseError(ctx, err.Error(), "01", "02")
+		if err.Error() == constants.ErrNoStockAvailable {
+			json.NewResponseBadRequest(ctx, []json.ValidationField{}, constants.ErrNoStockAvailable, constants.MedicalRecordService, "03")
+			return
+		}
+
+		if err.Error() == constants.ErrQuantityGreaterThanStock {
+			json.NewResponseBadRequest(ctx, []json.ValidationField{}, constants.ErrQuantityGreaterThanStock, constants.MedicalRecordService, "04")
+			return
+		}
+
+		json.NewResponseError(ctx, err.Error(), constants.MedicalRecordService, "05")
 		return
 	}
 
-	json.NewResponseCreated(ctx, medicalRecord, "data created", "01", "01")
+	json.NewResponseCreated(ctx, medicalRecord, "data created", constants.MedicalRecordService, "01")
 }
 
 func (dd *medicalRecordDelivery) getMedicalRecords(ctx *gin.Context) {
@@ -60,11 +67,11 @@ func (dd *medicalRecordDelivery) getMedicalRecords(ctx *gin.Context) {
 
 	mrs, err = dd.medicalRecordUC.GetMedicalRecords()
 	if err != nil {
-		json.NewResponseError(ctx, err.Error(), "01", "01")
+		json.NewResponseError(ctx, err.Error(), constants.MedicalRecordService, "01")
 		return
 	}
 
-	json.NewResponseSuccess(ctx, mrs, "data received", "01", "01")
+	json.NewResponseSuccess(ctx, mrs, "data received", constants.MedicalRecordService, "01")
 }
 
 func (dd *medicalRecordDelivery) getMedicalRecordByID(ctx *gin.Context) {
@@ -75,11 +82,11 @@ func (dd *medicalRecordDelivery) getMedicalRecordByID(ctx *gin.Context) {
 
 	mr, err = dd.medicalRecordUC.GetMedicalRecordByID(id)
 	if err != nil {
-		json.NewResponseBadRequest(ctx, nil, "data not found", "01", "01")
+		json.NewResponseBadRequest(ctx, []json.ValidationField{}, "data not found", constants.MedicalRecordService, "01")
 		return
 	}
 
-	json.NewResponseSuccess(ctx, mr, "data received", "01", "01")
+	json.NewResponseSuccess(ctx, mr, "data received", constants.MedicalRecordService, "01")
 }
 
 func (dd *medicalRecordDelivery) updatePaymentStatus(ctx *gin.Context) {
@@ -90,9 +97,23 @@ func (dd *medicalRecordDelivery) updatePaymentStatus(ctx *gin.Context) {
 
 	mr, err = dd.medicalRecordUC.UpdatePaymentStatus(id)
 	if err != nil {
-		json.NewResponseBadRequest(ctx, nil, "data not found", "01", "01")
+		if err.Error() == constants.ErrPaymentAlreadyTrue {
+			json.NewResponseBadRequest(ctx, []json.ValidationField{}, constants.ErrPaymentAlreadyTrue, constants.MedicalRecordService, "01")
+			return
+		}
+
+		if err.Error() == constants.ErrNoStockAvailable {
+			json.NewResponseBadRequest(ctx, []json.ValidationField{}, constants.ErrNoStockAvailable, constants.MedicalRecordService, "02")
+			return
+		}
+
+		if err.Error() == constants.ErrQuantityGreaterThanStock {
+			json.NewResponseBadRequest(ctx, []json.ValidationField{}, constants.ErrQuantityGreaterThanStock, constants.MedicalRecordService, "03")
+			return
+		}
+		json.NewResponseBadRequest(ctx, []json.ValidationField{}, "data not found", constants.MedicalRecordService, "02")
 		return
 	}
 
-	json.NewResponseSuccess(ctx, mr, "data updated", "01", "01")
+	json.NewResponseSuccess(ctx, mr, "data updated", constants.MedicalRecordService, "01")
 }
