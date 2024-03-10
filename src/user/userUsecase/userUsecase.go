@@ -64,7 +64,7 @@ func (usecase *userUsecase) UserRegister(req userDto.RegisterRequest) (userDto.U
 		return userDto.User{}, errors.New("1")
 	}
 
-	if req.Role == "DOCTOR" && req.Specialization == nil {
+	if req.Role == "DOCTOR" && req.Specialization == nil || req.Specialization == "" {
 		return userDto.User{}, errors.New("2")
 	} else if req.Role != "DOCTOR"  {
 		req.Specialization = nil
@@ -173,16 +173,28 @@ func (usecase *userUsecase) UpdatePassword(req userDto.UpdatePasswordRequest) er
 }
 
 func (usecase *userUsecase) Delete(userID string) error {
-	err := usecase.userRepo.Delete(userID)
+	_, err := usecase.userRepo.GetByID(userID)
+	if err != nil {
+		return err
+	}
+	err = usecase.userRepo.Delete(userID)
 	return err
 }
 
 func (usecase *userUsecase) SoftDelete(userID string) error {
-	err := usecase.userRepo.SoftDelete(userID)
+	_, err := usecase.userRepo.GetByID(userID)
+	if err != nil {
+		return err
+	}
+	err = usecase.userRepo.SoftDelete(userID)
 	return err
 }
 
 func (usecase *userUsecase) Restore(userID string) error {
-	err := usecase.userRepo.Restore(userID)
+	_, err := usecase.userRepo.GetTrashByID(userID)
+	if err != nil {
+		return err
+	}
+	err = usecase.userRepo.Restore(userID)
 	return err
 }

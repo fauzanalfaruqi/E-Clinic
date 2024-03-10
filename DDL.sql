@@ -17,17 +17,6 @@ CREATE TABLE users (
   deleted_at TIMESTAMP
 );
 
-CREATE TABLE doctor_schedules (
-  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-  doctor_id uuid NOT NULL REFERENCES users (id),
-  day_of_week INT NOT NULL,
-  start_at TIME NOT NULL,
-  end_at TIME NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP,
-  deleted_at TIMESTAMP
-);
-
 CREATE TABLE medicines (
   id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
   name VARCHAR NOT NULL,
@@ -45,6 +34,26 @@ CREATE TABLE actions (
   name VARCHAR NOT NULL UNIQUE,
   price INT NOT NULL,
   description text,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP,
+  deleted_at TIMESTAMP
+);
+
+CREATE TABLE doctor_schedules (
+  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+  doctor_id uuid NOT NULL REFERENCES users (id),
+  day_of_week INT NOT NULL,
+  start_at TIME NOT NULL,
+  end_at TIME NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP,
+  deleted_at TIMESTAMP
+);
+
+CREATE TABLE mst_schedule(
+  id INT PRIMARY KEY,
+  start_at TIME NOT NULL,
+  end_at TIME NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP,
   deleted_at TIMESTAMP
@@ -97,12 +106,3 @@ CREATE TABLE medical_record_action_details (
   deleted_at TIMESTAMP
 );
 
-
-CREATE TABLE mst_schedule(
-  id INT PRIMARY KEY,
-  start_at TIME NOT NULL,
-  end_at TIME NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP,
-  deleted_at TIMESTAMP
-)

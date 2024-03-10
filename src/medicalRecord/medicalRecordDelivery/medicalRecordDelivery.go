@@ -33,7 +33,7 @@ func (dd *medicalRecordDelivery) createMedicalRecord(ctx *gin.Context) {
 	var err error
 
 	if err = ctx.ShouldBindJSON(&req); err != nil {
-		json.NewResponseBadRequest(ctx, []json.ValidationField{}, "error when binding JSON.", constants.MedicalRecordService, "01")
+		json.NewResponseError(ctx, err.Error(), constants.MedicalRecordService, "01")
 		return
 	}
 

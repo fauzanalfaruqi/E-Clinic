@@ -17,7 +17,7 @@ func NewUserRepository(db *sql.DB) user.UserRepository {
 func (repository *userRepository) GetAllTrash() ([]userDto.User, error) {
 	query := `
 		SELECT id, username, password, role, specialization, created_at, updated_at
-		FROM users WHERE deleted_at != NULL ORDER BY created_at DESC;
+		FROM users WHERE deleted_at IS NOT NULL ORDER BY created_at DESC;
 	`
 	rows, err := repository.db.Query(query)
 	if err != nil {
@@ -40,6 +40,15 @@ func (repository *userRepository) GetAll() ([]userDto.User, error) {
 	defer rows.Close()
 	actions, err := scanUsers(rows)
 	return actions, err
+}
+
+func (repository *userRepository) GetTrashByID(userID string) (userDto.User, error) {
+	query := `
+		SELECT id, username, password, role, specialization, created_at, updated_at
+		FROM users WHERE id = $1 AND deleted_at IS NOT NULL LIMIT 1;
+	`
+	user, err := scanUser(repository.db.QueryRow(query, userID))
+	return user, err
 }
 
 func (repository *userRepository) GetByID(userID string) (userDto.User, error) {

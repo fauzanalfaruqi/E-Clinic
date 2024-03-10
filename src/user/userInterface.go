@@ -6,6 +6,7 @@ type UserRepository interface {
 	GetAllTrash() ([]userDto.User, error)
 	GetAll() ([]userDto.User, error)
 	GetByID(userID string) (userDto.User, error)
+	GetTrashByID(userID string) (userDto.User, error)
 	GetByUsername(username string) (userDto.User, error)
 	Insert(user userDto.User) (string, error)
 	Update(user userDto.User) error

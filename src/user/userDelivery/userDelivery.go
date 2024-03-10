@@ -124,7 +124,7 @@ func (delivery *userDelivery) GetAllTrash(c *gin.Context) {
 	}
 	
 	if len(users) == 0 {
-		json.NewResponseSuccess(c, nil, "Users not found", "01", "02")
+		json.NewResponseForbidden(c, "Users not found", "01", "02")
 		return
 	}
 
@@ -151,7 +151,7 @@ func (delivery *userDelivery) GetByID(c *gin.Context) {
 	user, err := delivery.userUC.GetByID(userID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			json.NewResponseSuccess(c, nil, "User not found", "01", "01")
+			json.NewResponseForbidden(c, "User not found", "01", "01")
 			return
 		}
 
@@ -178,16 +178,16 @@ func (delivery *userDelivery) Update(c *gin.Context) {
 	response, err := delivery.userUC.Update(request)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			json.NewResponseNotFound(c, "User not found", "01", "01")
+			json.NewResponseForbidden(c, "User not found", "01", "03")
 			return
 		}
 
 		if err.Error() == "1" {
-			json.NewResponseBadRequest(c, []json.ValidationField{{FieldName:"username",Message:"Username is already registered"}}, "Bad request", "01", "03")
+			json.NewResponseBadRequest(c, []json.ValidationField{{FieldName:"username",Message:"Username is already registered"}}, "Bad request", "01", "04")
 			return
 		}
 
-		json.NewResponseError(c, err.Error(), "01", "04")
+		json.NewResponseError(c, err.Error(), "01", "05")
 		return
 	}
 
@@ -210,7 +210,7 @@ func (delivery *userDelivery) UpdatePassword(c *gin.Context) {
 	err := delivery.userUC.UpdatePassword(request)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			json.NewResponseNotFound(c, "User not found", "01", "03")
+			json.NewResponseForbidden(c, "User not found", "01", "03")
 			return
 		}
 
@@ -235,7 +235,12 @@ func (delivery *userDelivery) Delete(c *gin.Context) {
 	userID := c.Param("id")
 	err := delivery.userUC.Delete(userID)
 	if err != nil {
-		json.NewResponseError(c, err.Error(), "01", "01")
+		if err == sql.ErrNoRows {
+			json.NewResponseForbidden(c, "User not found", "01", "01")
+			return
+		}
+
+		json.NewResponseError(c, err.Error(), "01", "02")
 		return
 	}
 
@@ -246,7 +251,12 @@ func (delivery *userDelivery) SoftDelete(c *gin.Context) {
 	userID := c.Param("id")
 	err := delivery.userUC.SoftDelete(userID)
 	if err != nil {
-		json.NewResponseError(c, err.Error(), "01", "01")
+		if err == sql.ErrNoRows {
+			json.NewResponseForbidden(c, "User not found", "01", "01")
+			return
+		}
+
+		json.NewResponseError(c, err.Error(), "01", "02")
 		return
 	}
 
@@ -256,8 +266,13 @@ func (delivery *userDelivery) SoftDelete(c *gin.Context) {
 func (delivery *userDelivery) Restore(c *gin.Context) {
 	userID := c.Param("id")
 	err := delivery.userUC.Restore(userID)
-	if err != nil {		
-		json.NewResponseError(c, err.Error(), "01", "01")
+	if err != nil {
+		if err == sql.ErrNoRows {
+			json.NewResponseForbidden(c, "User not found", "01", "01")
+			return
+		}
+
+		json.NewResponseError(c, err.Error(), "01", "02")
 		return
 	}
 
