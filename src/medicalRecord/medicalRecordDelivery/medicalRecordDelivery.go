@@ -49,12 +49,12 @@ func (dd *medicalRecordDelivery) createMedicalRecord(ctx *gin.Context) {
 		// 	return
 		// }
 		if err.Error() == constants.ErrNoStockAvailable {
-			json.NewResponseBadRequest(ctx, nil, constants.ErrNoStockAvailable, constants.MedicalRecordService, "03")
+			json.NewResponseBadRequest(ctx, []json.ValidationField{}, constants.ErrNoStockAvailable, constants.MedicalRecordService, "03")
 			return
 		}
 
 		if err.Error() == constants.ErrQuantityGreaterThanStock {
-			json.NewResponseBadRequest(ctx, nil, constants.ErrQuantityGreaterThanStock, constants.MedicalRecordService, "04")
+			json.NewResponseBadRequest(ctx, []json.ValidationField{}, constants.ErrQuantityGreaterThanStock, constants.MedicalRecordService, "04")
 			return
 		}
 
@@ -86,7 +86,7 @@ func (dd *medicalRecordDelivery) getMedicalRecordByID(ctx *gin.Context) {
 
 	mr, err = dd.medicalRecordUC.GetMedicalRecordByID(id)
 	if err != nil {
-		json.NewResponseBadRequest(ctx, nil, "data not found", constants.MedicalRecordService, "01")
+		json.NewResponseBadRequest(ctx, []json.ValidationField{}, "data not found", constants.MedicalRecordService, "01")
 		return
 	}
 
@@ -102,20 +102,20 @@ func (dd *medicalRecordDelivery) updatePaymentStatus(ctx *gin.Context) {
 	mr, err = dd.medicalRecordUC.UpdatePaymentStatus(id)
 	if err != nil {
 		if err.Error() == constants.ErrPaymentAlreadyTrue {
-			json.NewResponseBadRequest(ctx, nil, "The payment has already been set to true.", constants.MedicalRecordService, "01")
+			json.NewResponseBadRequest(ctx, []json.ValidationField{}, "The payment has already been set to true.", constants.MedicalRecordService, "01")
 			return
 		}
 
 		if err.Error() == constants.ErrNoStockAvailable {
-			json.NewResponseBadRequest(ctx, nil, constants.ErrNoStockAvailable, constants.MedicalRecordService, "02")
+			json.NewResponseBadRequest(ctx, []json.ValidationField{}, constants.ErrNoStockAvailable, constants.MedicalRecordService, "02")
 			return
 		}
 
 		if err.Error() == constants.ErrQuantityGreaterThanStock {
-			json.NewResponseBadRequest(ctx, nil, constants.ErrQuantityGreaterThanStock, constants.MedicalRecordService, "03")
+			json.NewResponseBadRequest(ctx, []json.ValidationField{}, constants.ErrQuantityGreaterThanStock, constants.MedicalRecordService, "03")
 			return
 		}
-		json.NewResponseBadRequest(ctx, nil, "data not found", constants.MedicalRecordService, "02")
+		json.NewResponseBadRequest(ctx, []json.ValidationField{}, "data not found", constants.MedicalRecordService, "02")
 		return
 	}
 
