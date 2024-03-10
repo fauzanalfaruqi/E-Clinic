@@ -3,6 +3,7 @@ package userDelivery
 import (
 	"avengers-clinic/model/dto/json"
 	"avengers-clinic/model/dto/userDto"
+	"avengers-clinic/pkg/middleware"
 	"avengers-clinic/pkg/utils"
 	"avengers-clinic/src/user"
 	"database/sql"
@@ -19,17 +20,17 @@ func NewUserDelivery(v1Group *gin.RouterGroup, userUC user.UserUsecase) {
 
 	userGroup := v1Group.Group("/users")
 	{
-		userGroup.GET("/trash", handler.GetAllTrash)
-		userGroup.GET("", handler.GetAll)
-		userGroup.GET("/:id", handler.GetByID)
-		userGroup.POST("/register", handler.PatientRegister)
-		userGroup.POST("", handler.UserRegister)
+		userGroup.GET("/trash", middleware.JwtAuth("ADMIN"), handler.GetAllTrash)
+		userGroup.GET("", middleware.JwtAuth("ADMIN"), handler.GetAll)
+		userGroup.GET("/:id", middleware.JwtAuth("ADMIN", "DOCTOR", "PATIENT"), handler.GetByID)
+		userGroup.POST("/register", middleware.JwtAuth("PATIENT"), handler.PatientRegister)
+		userGroup.POST("", middleware.JwtAuth("ADMIN"), handler.UserRegister)
 		userGroup.POST("/login", handler.Login)
-		userGroup.PUT("/:id", handler.Update)
-		userGroup.PUT("/:id/password", handler.UpdatePassword)
-		userGroup.DELETE("/:id", handler.Delete)
-		userGroup.DELETE("/:id/trash", handler.SoftDelete)
-		userGroup.PUT("/:id/restore", handler.Restore)
+		userGroup.PUT("/:id", middleware.JwtAuth("ADMIN", "DOCTOR", "PATIENT"), handler.Update)
+		userGroup.PUT("/:id/password", middleware.JwtAuth("ADMIN", "DOCTOR", "PATIENT"), handler.UpdatePassword)
+		userGroup.DELETE("/:id", middleware.JwtAuth("ADMIN"), handler.Delete)
+		userGroup.DELETE("/:id/trash", middleware.JwtAuth("ADMIN"), handler.SoftDelete)
+		userGroup.PUT("/:id/restore", middleware.JwtAuth("ADMIN"), handler.Restore)
 	}
 }
 

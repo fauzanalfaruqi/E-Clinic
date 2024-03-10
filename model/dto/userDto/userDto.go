@@ -3,12 +3,12 @@ package userDto
 type User struct {
 	ID             string      `json:"id,omitempty"`
 	Username       string      `json:"username,omitempty"`
-	Password       string      `json:"password,omitempty"`
+	Password       string      `json:"-"`
 	Role           string      `json:"role,omitempty"`
 	Specialization interface{} `json:"specialization,omitempty"`
 	CreatedAt      string      `json:"created_at,omitempty"`
 	UpdatedAt      string      `json:"updated_at,omitempty"`
-	DeletedAt      string      `json:"deleted_at,omitempty"`
+	DeletedAt      interface{} `json:"deleted_at,omitempty"`
 }
 
 type AuthRequest struct {
@@ -21,10 +21,6 @@ type RegisterRequest struct {
 	Password       string      `json:"password" validate:"required"`
 	Role           string      `json:"role" validate:"required,enum=ADMIN DOCTOR PATIENT"`
 	Specialization interface{} `json:"specialization"`
-}
-
-type LoginResponse struct {
-	Token string `json:"token"`
 }
 
 type UpdateRequest struct {

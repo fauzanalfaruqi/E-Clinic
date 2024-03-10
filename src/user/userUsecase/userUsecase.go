@@ -54,8 +54,6 @@ func (usecase *userUsecase) PatientRegister(req userDto.AuthRequest) (userDto.Us
 	if err != nil {
 		return userDto.User{}, err
 	}
-
-	newUser.Password = ""
 	return newUser, nil
 }
 
@@ -89,31 +87,29 @@ func (usecase *userUsecase) UserRegister(req userDto.RegisterRequest) (userDto.U
 	if err != nil {
 		return userDto.User{}, err
 	}
-
-	newUser.Password = ""
 	return newUser, nil
 }
 
-func (usecase *userUsecase) Login(req userDto.AuthRequest) (userDto.LoginResponse, error) {
+func (usecase *userUsecase) Login(req userDto.AuthRequest) (string, error) {
 	if !usecase.userRepo.IsUsernameExists(req.Username) {
-		return userDto.LoginResponse{}, errors.New("1")
+		return "", errors.New("1")
 	}
 
 	user, err := usecase.userRepo.GetByUsername(req.Username)
 	if err != nil {
-		return userDto.LoginResponse{}, err
+		return "", err
 	}
 
 	if utils.VerifyHashPassword(user.Password, req.Password) {
-		return userDto.LoginResponse{}, errors.New("1")
+		return "", errors.New("1")
 	}
 
-	token, err := utils.GenerateJWT(user.Username, user.Role)
+	token, err := utils.GenerateJWT(user.ID, user.Username, user.Role)
 	if err != nil {
-		return userDto.LoginResponse{}, err
+		return "", err
 	}
 
-	return userDto.LoginResponse{Token: token}, nil
+	return token, nil
 }
 
 func (usecase *userUsecase) Update(req userDto.UpdateRequest) (userDto.User, error) {
@@ -136,7 +132,7 @@ func (usecase *userUsecase) Update(req userDto.UpdateRequest) (userDto.User, err
 	if user.Role != "DOCTOR" {
 		user.Specialization = nil
 	}
-	user.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
+	user.UpdatedAt = time.Now().Format("2006-01-02T15:04:05Z")
 
 	err = usecase.userRepo.Update(user)
 	if err != nil {
@@ -173,7 +169,7 @@ func (usecase *userUsecase) UpdatePassword(req userDto.UpdatePasswordRequest) er
 }
 
 func (usecase *userUsecase) Delete(userID string) error {
-	_, err := usecase.userRepo.GetByID(userID)
+	_, err := usecase.userRepo.GetUserByID(userID)
 	if err != nil {
 		return err
 	}

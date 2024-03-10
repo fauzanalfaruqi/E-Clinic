@@ -12,8 +12,9 @@ var (
 	method = jwt.SigningMethodHS256
 )
 
-func GenerateJWT(username, role string) (string, error) {
+func GenerateJWT(id, username, role string) (string, error) {
 	claims := dto.JWTClams{
+		ID: id,
 		Username: username,
 		Role:     role,
 		StandardClaims: jwt.StandardClaims{
