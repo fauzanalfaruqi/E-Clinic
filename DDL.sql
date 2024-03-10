@@ -6,6 +6,8 @@ CREATE TYPE user_role AS ENUM ('ADMIN', 'DOCTOR', 'PATIENT');
 
 CREATE TYPE booking_status AS ENUM('WAITING', 'CANCELED', 'DONE');
 
+CREATE TYPE medicine_type AS ENUM('CAIR','TABLET','OLES','TETES','KAPSUL');
+
 CREATE TABLE users (
   id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
   username VARCHAR NOT NULL UNIQUE,
@@ -31,7 +33,7 @@ CREATE TABLE doctor_schedules (
 CREATE TABLE medicines (
   id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
   name VARCHAR NOT NULL,
-  medicine_type VARCHAR NOT NULL,
+  medicine_type medicine_type not null,
   price INT NOT NULL,
   stock INT DEFAULT 0,
   description text,
@@ -57,7 +59,7 @@ CREATE TABLE mst_schedule(
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP,
   deleted_at TIMESTAMP
-)
+);
 
 CREATE TABLE bookings (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,

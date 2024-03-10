@@ -39,9 +39,14 @@ func (m *medicineRepository) Delete(id string, deletedAt string) error {
 	_, err := m.db.Exec(sqlstament, deletedAt, id)
 	return err
 }
+func (m *medicineRepository) Restore(id string) error {
+	sqlstament := "UPDATE medicines SET deleted_at=null where id=$1;"
+	_, err := m.db.Exec(sqlstament, id)
+	return err
+}
 
 func (m *medicineRepository) RetrieveAll() ([]dto.MedicineResponse, error) {
-	sqlstatement := "SELECT id, name, medicine_type, price, stock, description,created_at,COALESCE(TO_CHAR(updated_at, 'YYYY-MM-DD HH24:MI:SS'), '') AS formatted_updated_at FROM medicines WHERE deleted_at IS NULL;"
+	sqlstatement := "SELECT id, name, medicine_type, price, stock, description,created_at,updated_at,COALESCE(TO_CHAR(deleted_at, 'YYYY-MM-DD HH24:MI:SS'), '') AS formatted_deleted_at FROM medicines WHERE deleted_at IS NULL;"
 	rows, err := m.db.Query(sqlstatement)
 	if err != nil {
 		return nil, err
@@ -63,13 +68,26 @@ func (m *medicineRepository) RetrieveById(id string) (dto.MedicineResponse, erro
 
 	return medicine, err
 }
+func (m *medicineRepository) Trash() ([]dto.MedicineResponse, error) {
+	sqlstatement := "SELECT id, name, medicine_type, price, stock, description,created_at,updated_at,COALESCE(TO_CHAR(deleted_at, 'YYYY-MM-DD HH24:MI:SS'), '') AS formatted_deleted_at FROM medicines WHERE deleted_at IS NOT NULL;"
+	rows, err := m.db.Query(sqlstatement)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	expenses, err := scan(rows)
+	if err != nil {
+		return nil, err
 
+	}
+	return expenses, err
+}
 func scan(rows *sql.Rows) ([]dto.MedicineResponse, error) {
 	Exp := []dto.MedicineResponse{}
 	var err error
 	for rows.Next() {
 		medicine := dto.MedicineResponse{}
-		err := rows.Scan(&medicine.Id, &medicine.Name, &medicine.MedicineType, &medicine.Price, &medicine.Stock, &medicine.Description, &medicine.CreatedAt, &medicine.UpdatedAt)
+		err := rows.Scan(&medicine.Id, &medicine.Name, &medicine.MedicineType, &medicine.Price, &medicine.Stock, &medicine.Description, &medicine.CreatedAt, &medicine.UpdatedAt, &medicine.DeletedAt)
 		if err != nil {
 			return nil, err
 
