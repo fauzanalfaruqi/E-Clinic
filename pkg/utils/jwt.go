@@ -2,9 +2,11 @@ package utils
 
 import (
 	"avengers-clinic/model/dto"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -33,4 +35,12 @@ func VerifyJWT(tokenString string) (*jwt.Token, error) {
 		return secretKey, nil
 	})
 	return token, err
+}
+
+func GetJWT(c *gin.Context) *dto.JWTClams {
+	authHeader := c.GetHeader("Authorization")
+	tokenString := strings.ReplaceAll(authHeader, "Bearer ", "")
+	token, _ := VerifyJWT(tokenString)
+	claims := token.Claims.(*dto.JWTClams)
+	return claims
 }
