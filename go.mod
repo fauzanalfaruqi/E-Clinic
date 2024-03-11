@@ -3,6 +3,7 @@ module avengers-clinic
 go 1.22.0
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-contrib/cors v1.5.0
 	github.com/gin-contrib/logger v1.0.0
