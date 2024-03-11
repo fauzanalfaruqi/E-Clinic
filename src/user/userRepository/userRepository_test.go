@@ -102,7 +102,7 @@ func (suite *userRepositoryTestSuite) TestGetByID() {
 	rows := sqlmock.NewRows([]string{"id", "username", "password", "role", "specialization", "created_at", "updated_at", "deleted_at"})
 
 	suite.mock.ExpectQuery(query).WithArgs("1").WillReturnRows(rows.AddRow("1", "admin", "admin", "ADMIN", nil, "2024-03-12T23:00:00Z", "2024-03-12T23:00:00Z", nil))
-	actialUser, err := suite.userRepo.GetTrashByID("1")
+	actialUser, err := suite.userRepo.GetByID("1")
 
 	suite.Nil(err)
 	suite.NotEmpty(actialUser)
@@ -114,7 +114,7 @@ func (suite *userRepositoryTestSuite) TestGetByUsername() {
 	rows := sqlmock.NewRows([]string{"id", "username", "password", "role", "specialization", "created_at", "updated_at", "deleted_at"})
 
 	suite.mock.ExpectQuery(query).WithArgs("admin").WillReturnRows(rows.AddRow("1", "admin", "admin", "ADMIN", nil, "2024-03-12T23:00:00Z", "2024-03-12T23:00:00Z", nil))
-	actialUser, err := suite.userRepo.GetTrashByID("admin")
+	actialUser, err := suite.userRepo.GetByUsername("admin")
 
 	suite.Nil(err)
 	suite.NotEmpty(actialUser)
@@ -205,6 +205,18 @@ func (suite *userRepositoryTestSuite) TestRestore() {
 	err := suite.userRepo.Restore(userID)
 
 	suite.Nil(err)
+}
+
+func (suite *userRepositoryTestSuite) TestIsUsernameExists() {
+	username := "admin"
+
+	suite.mock.ExpectQuery("SELECT (.+) FROM users").
+		WithArgs(username).
+		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
+
+	exists := suite.userRepo.IsUsernameExists(username)
+
+	suite.True(exists)
 }
 
 func TestUserDeliveryTestSuite(t *testing.T) {
