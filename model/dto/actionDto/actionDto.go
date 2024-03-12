@@ -19,6 +19,6 @@ type CreateRequest struct {
 type UpdateRequest struct {
 	ID          string
 	Name        string `json:"name"`
-	Price       int    `json:"price" validate:"number"`
+	Price       int    `json:"price"`
 	Description string `json:"description"`
 }

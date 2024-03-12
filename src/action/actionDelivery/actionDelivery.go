@@ -22,7 +22,7 @@ func NewActionDelivery(v1Group *gin.RouterGroup, actionUC action.ActionUsecase) 
 	{
 		actionGroup.GET("", middleware.JwtAuth("ADMIN"), handler.GetAll)
 		actionGroup.GET("/:id", middleware.JwtAuth("ADMIN"), handler.GetByID)
-		actionGroup.POST("/", middleware.JwtAuth("ADMIN"), handler.Create)
+		actionGroup.POST("", middleware.JwtAuth("ADMIN"), handler.Create)
 		actionGroup.PUT("/:id", middleware.JwtAuth("ADMIN"), handler.Update)
 		actionGroup.DELETE("/:id", middleware.JwtAuth("ADMIN"), handler.Delete)
 		actionGroup.DELETE("/:id/trash", middleware.JwtAuth("ADMIN"), handler.SoftDelete)
@@ -38,7 +38,7 @@ func (delivery *actionDelivery) GetAll(c *gin.Context) {
 	}
 
 	if len(response) == 0 {
-		json.NewResponseForbidden(c, "Actions not found", constants.ActionService, "01")
+		json.NewResponseForbidden(c, "Actions not found", constants.ActionService, "02")
 		return
 	}
 
@@ -58,7 +58,7 @@ func (delivery *actionDelivery) GetByID(c *gin.Context) {
 		return
 	}
 
-	json.NewResponseSuccess(c, response, "actions successfully retrieved", constants.ActionService, "01")
+	json.NewResponseSuccess(c, response, "action successfully retrieved", constants.ActionService, "01")
 }
 
 func (delivery *actionDelivery) Create(c *gin.Context) {
@@ -93,30 +93,25 @@ func (delivery *actionDelivery) Update(c *gin.Context) {
 		json.NewResponseError(c, err.Error(), constants.ActionService, "01")
 		return
 	}
-	
-	if err := utils.Validated(request); err != nil {
-		json.NewResponseBadRequest(c, err, "Bad request", constants.ActionService, "02")
-		return
-	}
 	request.ID = c.Param("id")
 
 	response, err := delivery.actionUC.Update(request)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			json.NewResponseForbidden(c, "Action not found", constants.ActionService, "03")
+			json.NewResponseForbidden(c, "Action not found", constants.ActionService, "02")
 			return
 		}
 
 		if err.Error() == "1" {
-			json.NewResponseBadRequest(c, []json.ValidationField{{FieldName:"name", Message:"Name is already registered"}}, "Bad request", constants.ActionService, "04")
+			json.NewResponseBadRequest(c, []json.ValidationField{{FieldName:"name", Message:"Name is already registered"}}, "Bad request", constants.ActionService, "03")
 			return
 		}
 
-		json.NewResponseError(c, err.Error(), constants.ActionService, "05")
+		json.NewResponseError(c, err.Error(), constants.ActionService, "04")
 		return
 	}
 
-	json.NewResponseSuccess(c, response, "Action updeted successfully", constants.ActionService, "01")
+	json.NewResponseSuccess(c, response, "Action updated successfully", constants.ActionService, "01")
 }
 
 func (delivery *actionDelivery) Delete(c *gin.Context) {
@@ -125,6 +120,7 @@ func (delivery *actionDelivery) Delete(c *gin.Context) {
 	if err != nil {
 		if err == sql.ErrNoRows {
 			json.NewResponseForbidden(c, "Action not found", constants.ActionService, "01")
+			return
 		}
 
 		json.NewResponseError(c, err.Error(), constants.ActionService, "02")
@@ -139,6 +135,7 @@ func (delivery *actionDelivery) SoftDelete(c *gin.Context) {
 	if err != nil {
 		if err == sql.ErrNoRows {
 			json.NewResponseForbidden(c, "Action not found", constants.ActionService, "01")
+			return
 		}
 
 		json.NewResponseError(c, err.Error(), constants.ActionService, "02")
@@ -153,6 +150,7 @@ func (delivery *actionDelivery) Restore(c *gin.Context) {
 	if err != nil {
 		if err == sql.ErrNoRows {
 			json.NewResponseForbidden(c, "Action not found", constants.ActionService, "01")
+			return
 		}
 
 		json.NewResponseError(c, err.Error(), constants.ActionService, "02")
