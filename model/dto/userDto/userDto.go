@@ -31,7 +31,7 @@ type UpdateRequest struct {
 
 type UpdatePasswordRequest struct {
 	ID                   string `json:"id"`
-	CurrentPassword      string `json:"current_password"`
-	NewPassword          string `json:"new_password"`
-	ConfirmationPassword string `json:"confirmation_password"`
+	CurrentPassword      string `json:"current_password" validate:"required"`
+	NewPassword          string `json:"new_password" validate:"required"`
+	ConfirmationPassword string `json:"confirmation_password" validate:"required"`
 }

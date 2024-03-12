@@ -98,7 +98,7 @@ func (repository *userRepository) Insert(user userDto.User) (string, error) {
 func (repository *userRepository) Update(user userDto.User) error {
 	query := `
 		UPDATE users SET username = $2, specialization = $3, updated_at = $4
-		Where id = $1;
+		WHERE id = $1;
 	`
 	_, err := repository.db.Exec(
 		query,
