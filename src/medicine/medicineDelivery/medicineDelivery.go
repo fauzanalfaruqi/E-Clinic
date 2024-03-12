@@ -1,9 +1,10 @@
-package delivery
+package medicineDelivery
 
 import (
 	"avengers-clinic/model/dto"
 	"avengers-clinic/model/dto/json"
 	"avengers-clinic/pkg/constants"
+	"avengers-clinic/pkg/middleware"
 	"avengers-clinic/pkg/utils"
 	"avengers-clinic/src/medicine"
 	"database/sql"
@@ -19,14 +20,13 @@ func NewMedicineDelivery(v1Group *gin.RouterGroup, medicineUC medicine.MedicineU
 	handler := &medicineDelivery{medicineUC: medicineUC}
 	medicineGroup := v1Group.Group("/medicines")
 	{
-		medicineGroup.GET("", handler.getAll)
-		medicineGroup.GET("/:id", handler.getById)
-		medicineGroup.POST("", handler.create)
-		medicineGroup.PUT("/:id", handler.update)
-		medicineGroup.DELETE("/:id", handler.delete)
-		medicineGroup.GET("/trash", handler.trash)
-		medicineGroup.PUT("/:id/restore", handler.restore)
-
+		medicineGroup.GET("", middleware.JwtAuth("ADMIN"), handler.getAll)
+		medicineGroup.GET("/:id", middleware.JwtAuth("ADMIN"), handler.getById)
+		medicineGroup.POST("", middleware.JwtAuth("ADMIN"), handler.create)
+		medicineGroup.PUT("/:id", middleware.JwtAuth("ADMIN"), handler.update)
+		medicineGroup.DELETE("/:id", middleware.JwtAuth("ADMIN"), handler.delete)
+		medicineGroup.GET("/trash", middleware.JwtAuth("ADMIN"), handler.trash)
+		medicineGroup.PUT("/:id/restore", middleware.JwtAuth("ADMIN"), handler.restore)
 	}
 }
 

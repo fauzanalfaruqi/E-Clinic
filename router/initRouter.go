@@ -13,9 +13,9 @@ import (
 	"avengers-clinic/src/medicalRecord/medicalRecordDelivery"
 	"avengers-clinic/src/medicalRecord/medicalRecordRepository"
 	"avengers-clinic/src/medicalRecord/medicalRecordUsecase"
-	"avengers-clinic/src/medicine/delivery"
-	"avengers-clinic/src/medicine/repository"
-	"avengers-clinic/src/medicine/usecase"
+	"avengers-clinic/src/medicine/medicineDelivery"
+	"avengers-clinic/src/medicine/medicineRepository"
+	"avengers-clinic/src/medicine/medicineUsecase"
 	"avengers-clinic/src/user/userDelivery"
 	"avengers-clinic/src/user/userRepository"
 	"avengers-clinic/src/user/userUsecase"
@@ -33,9 +33,9 @@ func InitRoute(v1Group *gin.RouterGroup, db *sql.DB) {
 	actionUsecase := actionUsecase.NewActionUsecase(actionRepository)
 	actionDelivery.NewActionDelivery(v1Group, actionUsecase)
 
-	medicineR := repository.NewMedicineRepository(db)
-	medicineUC := usecase.NewMedicineUsecase(medicineR)
-	delivery.NewMedicineDelivery(v1Group, medicineUC)
+	medicineRepo := medicineRepository.NewMedicineRepository(db)
+	medicineUC := medicineUsecase.NewMedicineUsecase(medicineRepo)
+	medicineDelivery.NewMedicineDelivery(v1Group, medicineUC)
 	
 	scheduleRepo := doctorScheduleRepository.NewDoctorScheduleRepo(db)
 	scheduleUC := doctorScheduleUsecase.NewDoctorScheduleUsecase(scheduleRepo)

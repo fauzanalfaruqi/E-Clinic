@@ -1,4 +1,4 @@
-package repository
+package medicineRepository
 
 import (
 	"avengers-clinic/model/dto"
@@ -39,6 +39,7 @@ func (m *medicineRepository) Delete(id string, deletedAt string) error {
 	_, err := m.db.Exec(sqlstament, deletedAt, id)
 	return err
 }
+
 func (m *medicineRepository) Restore(id string) error {
 	sqlstament := "UPDATE medicines SET deleted_at=null where id=$1;"
 	_, err := m.db.Exec(sqlstament, id)
@@ -55,7 +56,6 @@ func (m *medicineRepository) RetrieveAll() ([]dto.MedicineResponse, error) {
 	expenses, err := scan(rows)
 	if err != nil {
 		return nil, err
-
 	}
 	return expenses, err
 }
@@ -68,6 +68,7 @@ func (m *medicineRepository) RetrieveById(id string) (dto.MedicineResponse, erro
 
 	return medicine, err
 }
+
 func (m *medicineRepository) Trash() ([]dto.MedicineResponse, error) {
 	sqlstatement := "SELECT id, name, medicine_type, price, stock, description,created_at,updated_at,COALESCE(TO_CHAR(deleted_at, 'YYYY-MM-DD HH24:MI:SS'), '') AS formatted_deleted_at FROM medicines WHERE deleted_at IS NOT NULL;"
 	rows, err := m.db.Query(sqlstatement)
@@ -82,6 +83,7 @@ func (m *medicineRepository) Trash() ([]dto.MedicineResponse, error) {
 	}
 	return expenses, err
 }
+
 func scan(rows *sql.Rows) ([]dto.MedicineResponse, error) {
 	Exp := []dto.MedicineResponse{}
 	var err error

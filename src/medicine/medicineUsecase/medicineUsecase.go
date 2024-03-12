@@ -1,4 +1,4 @@
-package usecase
+package medicineUsecase
 
 import (
 	"avengers-clinic/model/dto"
