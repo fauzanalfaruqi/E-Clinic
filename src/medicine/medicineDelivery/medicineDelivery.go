@@ -36,6 +36,7 @@ func (m *medicineDelivery) getAll(ctx *gin.Context) {
 		json.NewResponseError(ctx, err.Error(), constants.MedicineService, "01")
 		return
 	}
+	
 	if len(getAll) == 0 {
 		json.NewResponseForbidden(ctx, "medicines not found", constants.MedicineService, "01")
 		return
