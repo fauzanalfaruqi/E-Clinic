@@ -1,4 +1,4 @@
-package repository
+package medicineRepository
 
 import (
 	"avengers-clinic/model/dto"
@@ -28,9 +28,6 @@ func (m *medicineRepository) Update(medicine dto.MedicineRequest) (dto.MedicineR
 	sqlstament := "UPDATE medicines SET name=$2,price=$3,stock=$4,description=$5,updated_at=$6,medicine_type=$7 where id=$1 and deleted_at is null returning id,name,medicine_type,price,stock,description,created_at,updated_at;"
 	var out dto.MedicineResponse
 	err := m.db.QueryRow(sqlstament, medicine.Id, medicine.Name, medicine.Price, medicine.Stock, medicine.Description, medicine.UpdatedAt, medicine.MedicineType).Scan(&out.Id, &out.Name, &out.MedicineType, &out.Price, &out.Stock, &out.Description, &out.CreatedAt, &out.UpdatedAt)
-	if err != nil {
-		return out, err
-	}
 	return out, err
 }
 
@@ -39,6 +36,7 @@ func (m *medicineRepository) Delete(id string, deletedAt string) error {
 	_, err := m.db.Exec(sqlstament, deletedAt, id)
 	return err
 }
+
 func (m *medicineRepository) Restore(id string) error {
 	sqlstament := "UPDATE medicines SET deleted_at=null where id=$1;"
 	_, err := m.db.Exec(sqlstament, id)
@@ -53,10 +51,6 @@ func (m *medicineRepository) RetrieveAll() ([]dto.MedicineResponse, error) {
 	}
 	defer rows.Close()
 	expenses, err := scan(rows)
-	if err != nil {
-		return nil, err
-
-	}
 	return expenses, err
 }
 
@@ -68,6 +62,7 @@ func (m *medicineRepository) RetrieveById(id string) (dto.MedicineResponse, erro
 
 	return medicine, err
 }
+
 func (m *medicineRepository) Trash() ([]dto.MedicineResponse, error) {
 	sqlstatement := "SELECT id, name, medicine_type, price, stock, description,created_at,updated_at,COALESCE(TO_CHAR(deleted_at, 'YYYY-MM-DD HH24:MI:SS'), '') AS formatted_deleted_at FROM medicines WHERE deleted_at IS NOT NULL;"
 	rows, err := m.db.Query(sqlstatement)
@@ -76,12 +71,9 @@ func (m *medicineRepository) Trash() ([]dto.MedicineResponse, error) {
 	}
 	defer rows.Close()
 	expenses, err := scan(rows)
-	if err != nil {
-		return nil, err
-
-	}
 	return expenses, err
 }
+
 func scan(rows *sql.Rows) ([]dto.MedicineResponse, error) {
 	Exp := []dto.MedicineResponse{}
 	var err error
@@ -93,11 +85,6 @@ func scan(rows *sql.Rows) ([]dto.MedicineResponse, error) {
 
 		}
 		Exp = append(Exp, medicine)
-	}
-	err = rows.Err()
-	if err != nil {
-		panic(err)
-
 	}
 	return Exp, err
 }

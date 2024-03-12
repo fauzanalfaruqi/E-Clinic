@@ -1,9 +1,10 @@
-package delivery
+package medicineDelivery
 
 import (
 	"avengers-clinic/model/dto"
 	"avengers-clinic/model/dto/json"
 	"avengers-clinic/pkg/constants"
+	"avengers-clinic/pkg/middleware"
 	"avengers-clinic/pkg/utils"
 	"avengers-clinic/src/medicine"
 	"database/sql"
@@ -19,14 +20,13 @@ func NewMedicineDelivery(v1Group *gin.RouterGroup, medicineUC medicine.MedicineU
 	handler := &medicineDelivery{medicineUC: medicineUC}
 	medicineGroup := v1Group.Group("/medicines")
 	{
-		medicineGroup.GET("", handler.getAll)
-		medicineGroup.GET("/:id", handler.getById)
-		medicineGroup.POST("", handler.create)
-		medicineGroup.PUT("/:id", handler.update)
-		medicineGroup.DELETE("/:id", handler.delete)
-		medicineGroup.GET("/trash", handler.trash)
-		medicineGroup.PUT("/:id/restore", handler.restore)
-
+		medicineGroup.GET("", middleware.JwtAuth("ADMIN"), handler.getAll)
+		medicineGroup.GET("/:id", middleware.JwtAuth("ADMIN"), handler.getById)
+		medicineGroup.POST("", middleware.JwtAuth("ADMIN"), handler.create)
+		medicineGroup.PUT("/:id", middleware.JwtAuth("ADMIN"), handler.update)
+		medicineGroup.DELETE("/:id", middleware.JwtAuth("ADMIN"), handler.delete)
+		medicineGroup.GET("/trash", middleware.JwtAuth("ADMIN"), handler.trash)
+		medicineGroup.PUT("/:id/restore", middleware.JwtAuth("ADMIN"), handler.restore)
 	}
 }
 
@@ -36,6 +36,7 @@ func (m *medicineDelivery) getAll(ctx *gin.Context) {
 		json.NewResponseError(ctx, err.Error(), constants.MedicineService, "01")
 		return
 	}
+	
 	if len(getAll) == 0 {
 		json.NewResponseForbidden(ctx, "medicines not found", constants.MedicineService, "01")
 		return
@@ -94,7 +95,6 @@ func (m *medicineDelivery) update(ctx *gin.Context) {
 		return
 	}
 	json.NewResponseSuccess(ctx, insert, "success update medicine", constants.MedicineService, "01")
-
 }
 
 func (m *medicineDelivery) delete(ctx *gin.Context) {
@@ -127,6 +127,7 @@ func (m *medicineDelivery) trash(ctx *gin.Context) {
 
 	json.NewResponseSuccess(ctx, getAll, "success", constants.MedicineService, "01")
 }
+
 func (m *medicineDelivery) restore(ctx *gin.Context) {
 	id := ctx.Param("id")
 	err := m.medicineUC.RestoreRecord(id)
