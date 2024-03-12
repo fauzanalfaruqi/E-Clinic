@@ -95,7 +95,6 @@ func (m *medicineDelivery) update(ctx *gin.Context) {
 		return
 	}
 	json.NewResponseSuccess(ctx, insert, "success update medicine", constants.MedicineService, "01")
-
 }
 
 func (m *medicineDelivery) delete(ctx *gin.Context) {
@@ -128,6 +127,7 @@ func (m *medicineDelivery) trash(ctx *gin.Context) {
 
 	json.NewResponseSuccess(ctx, getAll, "success", constants.MedicineService, "01")
 }
+
 func (m *medicineDelivery) restore(ctx *gin.Context) {
 	id := ctx.Param("id")
 	err := m.medicineUC.RestoreRecord(id)
