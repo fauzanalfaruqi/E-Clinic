@@ -48,7 +48,7 @@ func (delivery *actionDelivery) GetByID(c *gin.Context) {
 	actionID := c.Param("id")
 	response, err := delivery.actionUC.GetByID(actionID)
 	if err != nil {
-		if err.Error() == "1" {
+		if err == sql.ErrNoRows {
 			json.NewResponseForbidden(c, "Action not found", constants.ActionService, "01")
 			return
 		}
@@ -101,12 +101,12 @@ func (delivery *actionDelivery) Update(c *gin.Context) {
 
 	response, err := delivery.actionUC.Update(request)
 	if err != nil {
-		if err.Error() == "1" {
+		if err == sql.ErrNoRows {
 			json.NewResponseForbidden(c, "Action not found", constants.ActionService, "03")
 			return
 		}
 
-		if err.Error() == "2" {
+		if err.Error() == "1" {
 			json.NewResponseBadRequest(c, []json.ValidationField{{FieldName:"name", Message:"Name is already registered"}}, "Bad request", constants.ActionService, "04")
 			return
 		}

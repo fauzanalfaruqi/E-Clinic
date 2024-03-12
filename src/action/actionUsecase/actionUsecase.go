@@ -3,7 +3,6 @@ package actionUsecase
 import (
 	"avengers-clinic/model/dto/actionDto"
 	"avengers-clinic/src/action"
-	"database/sql"
 	"errors"
 	"time"
 )
@@ -18,18 +17,12 @@ func NewActionUsecase(actionRepo action.ActionRepository) action.ActionUsecase {
 
 func (usecase *actionUsecase) GetAll() ([]actionDto.Action, error) {
 	actions, err := usecase.actionRepo.GetAll()
-	if err != nil {
-		return nil, err
-	}
-	return actions, nil
+	return actions, err
 }
 
 func (usecase *actionUsecase) GetByID(actionID string) (actionDto.Action, error) {
 	action, err := usecase.actionRepo.GetByID(actionID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return actionDto.Action{}, errors.New("1")
-		}
 		return actionDto.Action{}, err
 	}
 	return action, nil
@@ -61,15 +54,12 @@ func (usecase *actionUsecase) Create(req actionDto.CreateRequest) (actionDto.Act
 func (usecase *actionUsecase) Update(req actionDto.UpdateRequest) (actionDto.Action, error) {
 	action, err := usecase.actionRepo.GetByID(req.ID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return actionDto.Action{}, errors.New("1")
-		}
 		return actionDto.Action{}, err
 	}
 
 	if req.Name != "" {
 		if usecase.actionRepo.IsNameExist(req.Name) && req.Name != action.Name {
-			return actionDto.Action{}, errors.New("2")
+			return actionDto.Action{}, errors.New("1")
 		}
 		action.Name = req.Name
 	}
