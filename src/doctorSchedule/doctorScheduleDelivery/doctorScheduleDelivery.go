@@ -29,11 +29,15 @@ func NewDoctorScheduleDelivery(v1Group *gin.RouterGroup, scheduleUC doctorSchedu
 		doctorScheduleGroup.PUT("/:id", handler.UpdateSchedule)
 		doctorScheduleGroup.DELETE("/:id", handler.DeleteSchedule)
 		doctorScheduleGroup.GET("/restore/:id", handler.RestoreSchedule)
+		doctorScheduleGroup.GET("/my-schedule/:doctor-id", handler.GetMySchedule)
 	}
 }
 
 func (dd doctorScheduleDelivery) GetAll(ctx *gin.Context) {
-	data, err := dd.scheduleUC.GetAll()
+
+	startDate := ctx.Query("sd")
+	endDate := ctx.Query("ed")
+	data, err := dd.scheduleUC.GetAll(startDate, endDate)
 	if err != nil {
 		json.NewResponseError(ctx, err.Error(), "04", "01")
 		return
@@ -48,8 +52,10 @@ func (dd doctorScheduleDelivery) GetByID(ctx *gin.Context) {
 		json.NewResponseBadRequest(ctx, nil, err.Error(), constants.DoctorScheduleService, "01")
 		return
 	}
+	status := ctx.Query("status")
 
-	data, err := dd.scheduleUC.GetByID(id)
+
+	data, err := dd.scheduleUC.GetByID(id, status)
 	if err != nil && err == sql.ErrNoRows {
 		json.NewResponseBadRequest(ctx, nil, "data not found", constants.DoctorScheduleService, "01")
 		return
@@ -60,6 +66,28 @@ func (dd doctorScheduleDelivery) GetByID(ctx *gin.Context) {
 
 	json.NewResponseSuccess(ctx, data, "success", constants.DoctorScheduleService, "01")
 
+}
+
+func (dd doctorScheduleDelivery) GetMySchedule(ctx *gin.Context) {
+	doctorId, err := uuid.Parse(ctx.Param("doctor-id"))
+	if err != nil {
+		json.NewResponseBadRequest(ctx, nil, err.Error(), constants.DoctorScheduleService, "01")
+		return
+	}
+	dayOfWeeks := ctx.Query("dow")
+	status := ctx.Query("status")
+	startDate := ctx.Query("sd")
+	endDate := ctx.Query("ed")
+
+	data, err := dd.scheduleUC.GetMySchedule(doctorId, dayOfWeeks, status, startDate, endDate)
+	if err != nil && err == sql.ErrNoRows {
+		json.NewResponseBadRequest(ctx, nil, "data not found", constants.DoctorScheduleService, "01")
+		return
+	}else if err != nil {
+		json.NewResponseError(ctx, err.Error(), constants.DoctorScheduleService, "01")
+		return
+	}
+	json.NewResponseSuccess(ctx, data, "success", constants.DoctorScheduleService, "01")
 }
 
 func (dd doctorScheduleDelivery) CreateSchedule(ctx *gin.Context) {
@@ -111,8 +139,8 @@ func (dd doctorScheduleDelivery) UpdateSchedule(ctx *gin.Context) {
 	}
 
 	data, err := dd.scheduleUC.UpdateSchedule(id, input)
-	if err != nil && err == sql.ErrNoRows {
-		json.NewResponseBadRequest(ctx, nil, "data not found", constants.DoctorScheduleService, "01")
+	if err != nil && (err == sql.ErrNoRows || err.Error() == constants.ErrScheduleDateExist) {
+		json.NewResponseBadRequest(ctx, nil, err.Error(), constants.DoctorScheduleService, "01")
 		return
 	}else if err != nil {
 		json.NewResponseError(ctx, err.Error(), constants.DoctorScheduleService, "01")
