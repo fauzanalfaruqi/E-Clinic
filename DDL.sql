@@ -20,9 +20,9 @@ CREATE TABLE users (
 CREATE TABLE doctor_schedules (
   id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
   doctor_id uuid NOT NULL REFERENCES users (id),
-  day_of_week INT NOT NULL,
-  start_at TIME NOT NULL,
-  end_at TIME NOT NULL,
+  schedule_date DATE NOT NULL,
+  start_at INT NOT NULL REFERENCES mst_schedule_time(id),
+  end_at INT NOT NULL REFERENCES mst_schedule_time(id),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP,
   deleted_at TIMESTAMP
@@ -51,11 +51,10 @@ CREATE TABLE actions (
 );
 
 CREATE TABLE bookings (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
   patient_id uuid NOT NULL REFERENCES users (id),
   doctor_schedule_id uuid NOT NULL REFERENCES doctor_schedules(id),
-  booking_date DATE NOT NULL,
-  mst_schedule_id int NOT NULL REFERENCES mst_schedule(id),
+  mst_schedule_id int NOT NULL REFERENCES mst_schedule_time(id),
   status booking_status NOT NULL,
   complaint text NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -98,11 +97,11 @@ CREATE TABLE medical_record_action_details (
 );
 
 
-CREATE TABLE mst_schedule(
+CREATE TABLE mst_schedule_time(
   id INT PRIMARY KEY,
   start_at TIME NOT NULL,
   end_at TIME NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP,
   deleted_at TIMESTAMP
-)
+);
