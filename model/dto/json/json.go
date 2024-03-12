@@ -79,3 +79,9 @@ func NewResponseForbidden(c *gin.Context, message, serviceCode, errorCode string
 		Message: message,
 	})
 }
+func NewResponseNotFound(c *gin.Context, message, serviceCode, errorCode string) {
+	c.JSON(http.StatusNotFound, jsonResponse{
+		Code:    "404" + serviceCode + errorCode,
+		Message: message,
+	})
+}
