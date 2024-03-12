@@ -16,7 +16,7 @@ func NewUserRepository(db *sql.DB) user.UserRepository {
 
 func (repository *userRepository) GetAllTrash() ([]userDto.User, error) {
 	query := `
-		SELECT id, username, password, role, specialization, created_at, updated_at
+		SELECT id, username, password, role, specialization, created_at, updated_at, deleted_at
 		FROM users WHERE deleted_at IS NOT NULL ORDER BY created_at DESC;
 	`
 	rows, err := repository.db.Query(query)
@@ -30,7 +30,7 @@ func (repository *userRepository) GetAllTrash() ([]userDto.User, error) {
 
 func (repository *userRepository) GetAll() ([]userDto.User, error) {
 	query := `
-		SELECT id, username, password, role, specialization, created_at, updated_at
+		SELECT id, username, password, role, specialization, created_at, updated_at, deleted_at
 		FROM users WHERE deleted_at IS NULL ORDER BY created_at DESC;
 	`
 	rows, err := repository.db.Query(query)
@@ -42,9 +42,18 @@ func (repository *userRepository) GetAll() ([]userDto.User, error) {
 	return actions, err
 }
 
+func (repository *userRepository) GetUserByID(userID string) (userDto.User, error) {
+	query := `
+		SELECT id, username, password, role, specialization, created_at, updated_at, deleted_at
+		FROM users WHERE id = $1 LIMIT 1;
+	`
+	user, err := scanUser(repository.db.QueryRow(query, userID))
+	return user, err
+}
+
 func (repository *userRepository) GetTrashByID(userID string) (userDto.User, error) {
 	query := `
-		SELECT id, username, password, role, specialization, created_at, updated_at
+		SELECT id, username, password, role, specialization, created_at, updated_at, deleted_at
 		FROM users WHERE id = $1 AND deleted_at IS NOT NULL LIMIT 1;
 	`
 	user, err := scanUser(repository.db.QueryRow(query, userID))
@@ -53,7 +62,7 @@ func (repository *userRepository) GetTrashByID(userID string) (userDto.User, err
 
 func (repository *userRepository) GetByID(userID string) (userDto.User, error) {
 	query := `
-		SELECT id, username, password, role, specialization, created_at, updated_at
+		SELECT id, username, password, role, specialization, created_at, updated_at, deleted_at
 		FROM users WHERE id = $1 AND deleted_at IS NULL LIMIT 1;
 	`
 	user, err := scanUser(repository.db.QueryRow(query, userID))
@@ -62,7 +71,7 @@ func (repository *userRepository) GetByID(userID string) (userDto.User, error) {
 
 func (repository *userRepository) GetByUsername(username string) (userDto.User, error) {
 	query := `
-		SELECT id, username, password, role, specialization, created_at, updated_at
+		SELECT id, username, password, role, specialization, created_at, updated_at, deleted_at
 		FROM users WHERE username = $1 AND deleted_at IS NULL LIMIT 1;
 	`
 	user, err := scanUser(repository.db.QueryRow(query, username))
@@ -102,7 +111,7 @@ func (repository *userRepository) Update(user userDto.User) error {
 }
 
 func (repository *userRepository) UpdatePassword(userId, hashPassword string) error {
-	query := "UPDATE users SET password = $2 WHERE id = $1;"
+	query := "UPDATE users SET password = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1;"
 	_, err := repository.db.Exec(query, userId, hashPassword)
 	return err
 }
@@ -114,13 +123,13 @@ func (repository *userRepository) Delete(userID string) error {
 }
 
 func (repository *userRepository) SoftDelete(userID string) error {
-	query := "UPDATE users SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1;"
+	query := "UPDATE users SET updated_at = CURRENT_TIMESTAMP, deleted_at = CURRENT_TIMESTAMP WHERE id = $1;"
 	_, err := repository.db.Exec(query, userID)
 	return err
 }
 
 func (repository *userRepository) Restore(userID string) error {
-	query := "UPDATE users SET deleted_at = NULL WHERE id = $1;"
+	query := "UPDATE users SET updated_at = CURRENT_TIMESTAMP, deleted_at = NULL WHERE id = $1;"
 	_, err := repository.db.Exec(query, userID)
 	return err
 }
@@ -141,6 +150,7 @@ func scanUser(row *sql.Row) (userDto.User, error) {
 		&user.Specialization,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+		&user.DeletedAt,
 	)
 	return user, err
 }
@@ -157,6 +167,7 @@ func scanUsers(rows *sql.Rows) ([]userDto.User, error) {
 			&user.Specialization,
 			&user.CreatedAt,
 			&user.UpdatedAt,
+			&user.DeletedAt,
 		)
 		if err != nil {
 			return nil, err
