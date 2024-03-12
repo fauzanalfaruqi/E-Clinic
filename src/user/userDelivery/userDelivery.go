@@ -24,7 +24,7 @@ func NewUserDelivery(v1Group *gin.RouterGroup, userUC user.UserUsecase) {
 		userGroup.GET("/trash", middleware.JwtAuth("ADMIN"), handler.GetAllTrash)
 		userGroup.GET("", middleware.JwtAuth("ADMIN"), handler.GetAll)
 		userGroup.GET("/:id", middleware.JwtAuth("ADMIN", "DOCTOR", "PATIENT"), handler.GetByID)
-		userGroup.POST("/register", middleware.JwtAuth("PATIENT"), handler.PatientRegister)
+		userGroup.POST("/register", handler.PatientRegister)
 		userGroup.POST("", middleware.JwtAuth("ADMIN"), handler.UserRegister)
 		userGroup.POST("/login", handler.Login)
 		userGroup.PUT("/:id", middleware.JwtAuth("ADMIN", "DOCTOR", "PATIENT"), handler.Update)
@@ -33,6 +33,52 @@ func NewUserDelivery(v1Group *gin.RouterGroup, userUC user.UserUsecase) {
 		userGroup.DELETE("/:id/trash", middleware.JwtAuth("ADMIN"), handler.SoftDelete)
 		userGroup.PUT("/:id/restore", middleware.JwtAuth("ADMIN"), handler.Restore)
 	}
+}
+
+func (delivery *userDelivery) GetAllTrash(c *gin.Context) {
+	users, err := delivery.userUC.GetAllTrash()
+	if err != nil {
+		json.NewResponseError(c, err.Error(), constants.UserService, "01")
+		return
+	}
+	
+	if len(users) == 0 {
+		json.NewResponseForbidden(c, "Users not found", constants.UserService, "02")
+		return
+	}
+
+	json.NewResponseSuccess(c, users, "Users retrieved successfully", constants.UserService, "01")
+}
+
+func (delivery *userDelivery) GetAll(c *gin.Context) {
+	users, err := delivery.userUC.GetAll()
+	if err != nil {
+		json.NewResponseError(c, err.Error(), constants.UserService, "01")
+		return
+	}
+	
+	if len(users) == 0 {
+		json.NewResponseForbidden(c, "Users not found", constants.UserService, "02")
+		return
+	}
+
+	json.NewResponseSuccess(c, users, "Users retrieved successfully", constants.UserService, "01")
+}
+
+func (delivery *userDelivery) GetByID(c *gin.Context) {
+	userID := c.Param("id")
+	user, err := delivery.userUC.GetByID(userID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			json.NewResponseForbidden(c, "User not found", constants.UserService, "01")
+			return
+		}
+
+		json.NewResponseError(c, err.Error(), constants.UserService, "02")
+		return
+	}
+
+	json.NewResponseSuccess(c, user, "User retrieved successfully", constants.UserService, "01")
 }
 
 func (delivery *userDelivery) PatientRegister(c *gin.Context) {
@@ -118,62 +164,11 @@ func (delivery *userDelivery) Login(c *gin.Context) {
 	json.NewResponseSuccess(c, response, "Login successfully", constants.UserService, "01")
 }
 
-func (delivery *userDelivery) GetAllTrash(c *gin.Context) {
-	users, err := delivery.userUC.GetAllTrash()
-	if err != nil {
-		json.NewResponseError(c, err.Error(), constants.UserService, "01")
-		return
-	}
-	
-	if len(users) == 0 {
-		json.NewResponseForbidden(c, "Users not found", constants.UserService, "02")
-		return
-	}
-
-	json.NewResponseSuccess(c, users, "Users retrieved successfully", constants.UserService, "01")
-}
-
-func (delivery *userDelivery) GetAll(c *gin.Context) {
-	users, err := delivery.userUC.GetAll()
-	if err != nil {
-		json.NewResponseError(c, err.Error(), constants.UserService, "01")
-		return
-	}
-	
-	if len(users) == 0 {
-		json.NewResponseSuccess(c, nil, "Users not found", constants.UserService, "02")
-		return
-	}
-
-	json.NewResponseSuccess(c, users, "Users retrieved successfully", constants.UserService, "01")
-}
-
-func (delivery *userDelivery) GetByID(c *gin.Context) {
-	userID := c.Param("id")
-	user, err := delivery.userUC.GetByID(userID)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			json.NewResponseForbidden(c, "User not found", constants.UserService, "01")
-			return
-		}
-
-		json.NewResponseError(c, err.Error(), constants.UserService, "02")
-		return
-	}
-
-	json.NewResponseSuccess(c, user, "User retrieved successfully", constants.UserService, "01")
-}
-
 func (delivery *userDelivery) Update(c *gin.Context) {
 	var request userDto.UpdateRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		json.NewResponseError(c, err.Error(), constants.UserService, "01")
 		return 
-	}
-
-	if err := utils.Validated(request); err != nil {
-		json.NewResponseBadRequest(c, err, "Bad request", constants.UserService, "02")
-		return
 	}
 	request.ID = c.Param("id")
 
