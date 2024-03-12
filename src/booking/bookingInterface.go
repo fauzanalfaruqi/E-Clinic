@@ -9,19 +9,19 @@ import (
 
 type (
 	BookingRepository interface {
-		GetAllBooking(date string) ([]entity.Bookings, error)
+		GetAllBooking() ([]entity.Bookings, error)
 		GetAllBookingByDoctorID(doctorId uuid.UUID) ([]entity.Bookings, error)
 		GetOneByID(id uuid.UUID) (entity.Bookings, error)
-		GetBookingByScheduleID()
+		GetBookingByScheduleID(scheduleId uuid.UUID, status []string) ([]entity.Bookings, error)
 		CreateBooking(input entity.Bookings) (entity.Bookings, error)
-		CheckExist(doctorScheduleID uuid.UUID, bookingDate string, mstScheduleID int) bool
+		CheckExist(doctorScheduleID uuid.UUID, mstScheduleID int) bool
 		EditSchedule(id uuid.UUID, input entity.Bookings) error
 		CancelBooking(id uuid.UUID) error
 		FinishBooking(id uuid.UUID) error
 	}
 
 	BookingUsecase interface {
-		GetAll(date string) ([]entity.Bookings, error)
+		GetAll() ([]entity.Bookings, error)
 		GetAllByDoctorID(doctorId uuid.UUID) ([]entity.Bookings, error)
 		GetOneByID(id uuid.UUID) (entity.Bookings, error)
 		GetByScheduleID()

@@ -49,7 +49,7 @@ func (bd bookingDelivery) GetAll(ctx *gin.Context) {
 	}
 
 	//Get the datas
-	data, err := bd.bookingUC.GetAll(date)
+	data, err := bd.bookingUC.GetAll()
 	if err != nil {
 		json.NewResponseError(ctx, err.Error(), constants.BookingService, "01")
 		return
@@ -119,12 +119,6 @@ func (bd bookingDelivery) Create(ctx *gin.Context) {
 		return
 	}
 
-	//validate date
-	if _, err := time.Parse("2006-01-02", input.BookingDate); err != nil {
-		json.NewResponseBadRequest(ctx, nil, "invalid date type", constants.BookingService, "01")
-		return
-	}
-
 	//Create booking
 	data, err := bd.bookingUC.Create(input)
 	//if create failed, it return err no rows 
@@ -134,7 +128,7 @@ func (bd bookingDelivery) Create(ctx *gin.Context) {
 		json.NewResponseBadRequest(ctx, nil, constants.ErrScheduleTaken, constants.BookingService, "01")
 		return
 	//we also use validate match doctor_schedules.day_of_week == day_of_week(bookings.booking_date)
-	} else if err != nil && err.Error() == constants.ErrScheduleNotMatch {
+	} else if err != nil && (err.Error() == constants.ErrDocSchedNotExist || err.Error() == constants.ErrScheduleNotMatch) {
 		json.NewResponseBadRequest(ctx, nil, err.Error(), constants.BookingService, "01")
 		return
 	} else if err != nil {
@@ -166,15 +160,6 @@ func (bd bookingDelivery) EditSchedule(ctx *gin.Context) {
 		return
 	}
 
-	//Validating date
-	//TODO: Create validator for date only type
-	if input.BookingDate != "" {
-		if _, err := time.Parse("2006-01-02", input.BookingDate); err != nil {
-			json.NewResponseBadRequest(ctx, nil, "invalid date type", constants.BookingService, "01")
-			return
-		}
-	}
-
 	data, err := bd.bookingUC.EditSchedule(id, input)
 	if err != nil && (err == sql.ErrNoRows || err.Error() == constants.ErrScheduleTaken) {
 		json.NewResponseBadRequest(ctx, nil, constants.ErrScheduleTaken, constants.BookingService, "01")
@@ -195,6 +180,11 @@ func (bd bookingDelivery) Done(ctx *gin.Context) {
 		json.NewResponseBadRequest(ctx, nil, err.Error(), constants.BookingService, "01")
 		return
 	}
+
+	// file, _ := ctx.FormFile("img")
+	// file.Filename = "coba"
+	// file.
+	// ctx.SaveUploadedFile(file, )
 
 	// if err := ctx.ShouldBindJSON(&input); err != nil {
 	// 	json.NewResponseError(ctx, err.Error(), constants.BookingService, "01")
