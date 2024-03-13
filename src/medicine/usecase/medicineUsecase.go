@@ -3,8 +3,6 @@ package usecase
 import (
 	"avengers-clinic/model/dto"
 	"avengers-clinic/src/medicine"
-	"database/sql"
-	"errors"
 	"fmt"
 	"time"
 )
@@ -48,15 +46,11 @@ func (m *medicineUC) CreateRecord(medicine dto.MedicineRequest) (dto.MedicineRes
 	return new, err
 }
 
-func (m *medicineUC) UpdateRecord(Updated dto.MedicineRequest) (dto.MedicineResponse, error) {
+func (m *medicineUC) UpdateRecord(Updated dto.UpdateRequest) (dto.MedicineResponse, error) {
 	action, err := m.medicineRepo.RetrieveById(Updated.Id)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return dto.MedicineResponse{}, errors.New("1")
-		}
 		return dto.MedicineResponse{}, err
 	}
-	fmt.Println(action)
 
 	if Updated.Name == "" {
 		Updated.Name = action.Name
@@ -89,12 +83,29 @@ func (m *medicineUC) UpdateRecord(Updated dto.MedicineRequest) (dto.MedicineResp
 }
 
 func (m *medicineUC) DeleteRecord(id string) error {
-	var err error
-
-	fmt.Println(id)
-
+	_, err :=  m.medicineRepo.RetrieveById(id)
+	if err != nil {
+		return err
+	}
 	deletedAt := time.Now().Format("2006-01-02 15:04:05")
 	err = m.medicineRepo.Delete(id, deletedAt)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+func (m *medicineUC) TrashRecord() ([]dto.MedicineResponse, error) {
+	all, err := m.medicineRepo.Trash()
+	if err != nil {
+		return nil, err
+
+	}
+	return all, nil
+}
+
+func (m *medicineUC) RestoreRecord(id string) error {
+	err := m.medicineRepo.Restore(id)
 	if err != nil {
 		return err
 	}
