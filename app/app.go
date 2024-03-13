@@ -15,7 +15,6 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/logger"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/rs/zerolog/pkgerrors"
@@ -24,9 +23,9 @@ import (
 func initEnv() (dto.ConfigData, error) {
 	var configData dto.ConfigData
 
-	if err := godotenv.Load(); err != nil {
-		return dto.ConfigData{}, err
-	}
+	// if err := godotenv.Load(); err != nil {
+	// 	return dto.ConfigData{}, err
+	// }
 
 	if port := os.Getenv("PORT"); port != "" {
 		configData.AppConfig.Port = port
@@ -125,7 +124,18 @@ func RunService() {
 	}))
 
 	// open file app.log
-	file, err := os.OpenFile("app.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	now := time.Now().Format("2006-01-02")
+	logDir := "logger/"
+	logFileName := now + " logger.log"
+	logFilePath := logDir + logFileName
+
+	if _, err := os.Stat(logDir); os.IsNotExist(err) {
+		if err := os.MkdirAll(logDir, 0755); err != nil {
+			log.Fatal().Err(err).Msg("Unable to create directory")
+		}
+	}
+	
+	file, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Unable to open log file")
 	}

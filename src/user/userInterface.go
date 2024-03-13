@@ -6,6 +6,8 @@ type UserRepository interface {
 	GetAllTrash() ([]userDto.User, error)
 	GetAll() ([]userDto.User, error)
 	GetByID(userID string) (userDto.User, error)
+	GetUserByID(userID string) (userDto.User, error)
+	GetTrashByID(userID string) (userDto.User, error)
 	GetByUsername(username string) (userDto.User, error)
 	Insert(user userDto.User) (string, error)
 	Update(user userDto.User) error
@@ -22,7 +24,7 @@ type UserUsecase interface {
 	GetByID(userID string) (userDto.User, error)
 	PatientRegister(req userDto.AuthRequest) (userDto.User, error)
 	UserRegister(req userDto.RegisterRequest) (userDto.User, error)
-	Login(req userDto.AuthRequest) (userDto.LoginResponse, error)
+	Login(req userDto.AuthRequest) (string, error)
 	Update(req userDto.UpdateRequest) (userDto.User, error)
 	UpdatePassword(req userDto.UpdatePasswordRequest) error
 	Delete(userID string) error

@@ -36,12 +36,8 @@ func (usecase *userUsecase) PatientRegister(req userDto.AuthRequest) (userDto.Us
 		return userDto.User{}, errors.New("1")
 	}
 
-	hashPassword, err := utils.GenerateHashPassword(req.Password)
-	if err != nil {
-		return userDto.User{}, err
-	}
-
-	now := time.Now().Format("2006-01-02 15:04:05")
+	hashPassword, _ := utils.GenerateHashPassword(req.Password)
+	now := time.Now().Format("2006-01-02T15:04:05Z")
 	var newUser = userDto.User{
 		Username: req.Username,
 		Password: hashPassword,
@@ -50,12 +46,11 @@ func (usecase *userUsecase) PatientRegister(req userDto.AuthRequest) (userDto.Us
 		UpdatedAt: now,
 	}
 
+	var err error
 	newUser.ID, err = usecase.userRepo.Insert(newUser)
 	if err != nil {
 		return userDto.User{}, err
 	}
-
-	newUser.Password = ""
 	return newUser, nil
 }
 
@@ -64,17 +59,13 @@ func (usecase *userUsecase) UserRegister(req userDto.RegisterRequest) (userDto.U
 		return userDto.User{}, errors.New("1")
 	}
 
-	if req.Role == "DOCTOR" && req.Specialization == nil {
+	if req.Role == "DOCTOR" && req.Specialization == nil || req.Specialization == "" {
 		return userDto.User{}, errors.New("2")
 	} else if req.Role != "DOCTOR"  {
 		req.Specialization = nil
 	}
 
-	hashPassword, err := utils.GenerateHashPassword(req.Password)
-	if err != nil {
-		return userDto.User{}, err
-	}
-
+	hashPassword, _ := utils.GenerateHashPassword(req.Password)
 	now := time.Now().Format("2006-01-02 15:04:05")
 	var newUser = userDto.User{
 		Username: req.Username,
@@ -85,35 +76,30 @@ func (usecase *userUsecase) UserRegister(req userDto.RegisterRequest) (userDto.U
 		UpdatedAt: now,
 	}
 
+	var err error
 	newUser.ID, err = usecase.userRepo.Insert(newUser)
 	if err != nil {
 		return userDto.User{}, err
 	}
-
-	newUser.Password = ""
 	return newUser, nil
 }
 
-func (usecase *userUsecase) Login(req userDto.AuthRequest) (userDto.LoginResponse, error) {
+func (usecase *userUsecase) Login(req userDto.AuthRequest) (string, error) {
 	if !usecase.userRepo.IsUsernameExists(req.Username) {
-		return userDto.LoginResponse{}, errors.New("1")
+		return "", errors.New("1")
 	}
 
 	user, err := usecase.userRepo.GetByUsername(req.Username)
 	if err != nil {
-		return userDto.LoginResponse{}, err
+		return "", err
 	}
 
 	if utils.VerifyHashPassword(user.Password, req.Password) {
-		return userDto.LoginResponse{}, errors.New("1")
+		return "", errors.New("1")
 	}
 
-	token, err := utils.GenerateJWT(user.Username, user.Role)
-	if err != nil {
-		return userDto.LoginResponse{}, err
-	}
-
-	return userDto.LoginResponse{Token: token}, nil
+	token, _ := utils.GenerateJWT(user.ID, user.Username, user.Role)
+	return token, nil
 }
 
 func (usecase *userUsecase) Update(req userDto.UpdateRequest) (userDto.User, error) {
@@ -136,13 +122,12 @@ func (usecase *userUsecase) Update(req userDto.UpdateRequest) (userDto.User, err
 	if user.Role != "DOCTOR" {
 		user.Specialization = nil
 	}
-	user.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
+	user.UpdatedAt = time.Now().Format("2006-01-02T15:04:05Z")
 
 	err = usecase.userRepo.Update(user)
 	if err != nil {
 		return userDto.User{}, err
 	}
-	user.Password = ""
 	return user, nil
 }
 
@@ -160,12 +145,8 @@ func (usecase *userUsecase) UpdatePassword(req userDto.UpdatePasswordRequest) er
 		return errors.New("2")
 	}
 
-	hashPassword, err := utils.GenerateHashPassword(req.NewPassword)
-	if err != nil {
-		return err
-	}
-
-	err = usecase.userRepo.UpdatePassword(user.ID, hashPassword)
+	hashPassword, _ := utils.GenerateHashPassword(req.NewPassword)
+	err = usecase.userRepo.UpdatePassword(req.ID, hashPassword)
 	if err != nil {
 		return err
 	}
@@ -173,16 +154,28 @@ func (usecase *userUsecase) UpdatePassword(req userDto.UpdatePasswordRequest) er
 }
 
 func (usecase *userUsecase) Delete(userID string) error {
-	err := usecase.userRepo.Delete(userID)
+	_, err := usecase.userRepo.GetUserByID(userID)
+	if err != nil {
+		return err
+	}
+	err = usecase.userRepo.Delete(userID)
 	return err
 }
 
 func (usecase *userUsecase) SoftDelete(userID string) error {
-	err := usecase.userRepo.SoftDelete(userID)
+	_, err := usecase.userRepo.GetByID(userID)
+	if err != nil {
+		return err
+	}
+	err = usecase.userRepo.SoftDelete(userID)
 	return err
 }
 
 func (usecase *userUsecase) Restore(userID string) error {
-	err := usecase.userRepo.Restore(userID)
+	_, err := usecase.userRepo.GetTrashByID(userID)
+	if err != nil {
+		return err
+	}
+	err = usecase.userRepo.Restore(userID)
 	return err
 }
