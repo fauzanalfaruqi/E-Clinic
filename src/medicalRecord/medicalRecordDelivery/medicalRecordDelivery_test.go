@@ -4,6 +4,7 @@ import (
 	myjson "avengers-clinic/model/dto/json"
 	"avengers-clinic/model/dto/medicalRecordDTO"
 	"avengers-clinic/pkg/constants"
+	"avengers-clinic/pkg/utils"
 	"bytes"
 	"encoding/json"
 	"errors"
@@ -108,6 +109,8 @@ func (suite *MedicalRecordDeliverySuite) TestCreateMedicalRecord_Success() {
 	w := httptest.NewRecorder()
 	reqBody, _ := json.Marshal(requestPayload)
 	req, _ := http.NewRequest("POST", "/api/v1/medical-records", bytes.NewBuffer(reqBody))
+	token, _ := utils.GenerateJWT("2cfde543-ea6a-469f-b332-4e630a1cad8c", "doctor", "DOCTOR")
+	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Content-Type", "application/json")
 	suite.router.ServeHTTP(w, req)
 
@@ -132,6 +135,8 @@ func (suite *MedicalRecordDeliverySuite) TestCreateMedicalRecord_BadRequest() {
 	w := httptest.NewRecorder()
 	reqBody, _ := json.Marshal(requestPayload)
 	req, _ := http.NewRequest("POST", "/api/v1/medical-records", bytes.NewBuffer(reqBody))
+	token, _ := utils.GenerateJWT("2cfde543-ea6a-469f-b332-4e630a1cad8c", "doctor", "DOCTOR")
+	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Content-Type", "application/json")
 	suite.router.ServeHTTP(w, req)
 
@@ -178,6 +183,8 @@ func (suite *MedicalRecordDeliverySuite) TestCreateMedicalRecord_Error() {
 	w := httptest.NewRecorder()
 	reqBody, _ := json.Marshal(requestPayload)
 	req, _ := http.NewRequest("POST", "/api/v1/medical-records", bytes.NewBuffer(reqBody))
+	token, _ := utils.GenerateJWT("2cfde543-ea6a-469f-b332-4e630a1cad8c", "doctor", "DOCTOR")
+	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Content-Type", "application/json")
 	suite.router.ServeHTTP(w, req)
 
@@ -220,6 +227,8 @@ func (suite *MedicalRecordDeliverySuite) TestCreateMedicalRecord_NoStockAvailabl
 	w := httptest.NewRecorder()
 	reqBody, _ := json.Marshal(requestPayload)
 	req, _ := http.NewRequest("POST", "/api/v1/medical-records", bytes.NewBuffer(reqBody))
+	token, _ := utils.GenerateJWT("2cfde543-ea6a-469f-b332-4e630a1cad8c", "doctor", "DOCTOR")
+	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Content-Type", "application/json")
 	suite.router.ServeHTTP(w, req)
 
@@ -261,6 +270,8 @@ func (suite *MedicalRecordDeliverySuite) TestCreateMedicalRecord_QuantityGreater
 	w := httptest.NewRecorder()
 	reqBody, _ := json.Marshal(requestPayload)
 	req, _ := http.NewRequest("POST", "/api/v1/medical-records", bytes.NewBuffer(reqBody))
+	token, _ := utils.GenerateJWT("2cfde543-ea6a-469f-b332-4e630a1cad8c", "doctor", "DOCTOR")
+	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Content-Type", "application/json")
 	suite.router.ServeHTTP(w, req)
 
@@ -332,8 +343,8 @@ func (suite *MedicalRecordDeliverySuite) TestGetMedicalRecords_Success() {
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/v1/medical-records", nil)
-	//token, _ := utils.GenerateJWT("9d3cd7b1-ade2-4f8c-b215-9e74f0c87bf5", "admin", "ADMIN")
-	//req.Header.Set("Authorization", "Bearer "+token)
+	token, _ := utils.GenerateJWT("2cfde543-ea6a-469f-b332-4e630a1cad8c", "hello", "ADMIN")
+	req.Header.Set("Authorization", "Bearer "+token)
 	suite.router.ServeHTTP(w, req)
 
 	suite.Equal(http.StatusOK, w.Code)
@@ -361,6 +372,8 @@ func (suite *MedicalRecordDeliverySuite) TestGetMedicalRecordByID_Success() {
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/v1/medical-records/1", nil)
+	token, _ := utils.GenerateJWT("2cfde543-ea6a-469f-b332-4e630a1cad8c", "hello", "ADMIN")
+	req.Header.Set("Authorization", "Bearer "+token)
 	suite.router.ServeHTTP(w, req)
 
 	suite.Equal(http.StatusOK, w.Code)
@@ -383,6 +396,8 @@ func (suite *MedicalRecordDeliverySuite) TestGetMedicalRecordByID_NotFound() {
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/v1/medical-records/non_existent_id", nil)
+	token, _ := utils.GenerateJWT("2cfde543-ea6a-469f-b332-4e630a1cad8c", "hello", "ADMIN")
+	req.Header.Set("Authorization", "Bearer "+token)
 	suite.router.ServeHTTP(w, req)
 
 	suite.Equal(http.StatusBadRequest, w.Code)
@@ -411,6 +426,8 @@ func (suite *MedicalRecordDeliverySuite) TestUpdatePaymentStatus_Success() {
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PUT", "/api/v1/medical-records/1", nil)
+	token, _ := utils.GenerateJWT("2cfde543-ea6a-469f-b332-4e630a1cad8c", "hello", "ADMIN")
+	req.Header.Set("Authorization", "Bearer "+token)
 	suite.router.ServeHTTP(w, req)
 
 	suite.Equal(http.StatusOK, w.Code)
@@ -433,6 +450,8 @@ func (suite *MedicalRecordDeliverySuite) TestUpdatePaymentStatus_PaymentAlreadyT
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PUT", "/api/v1/medical-records/1", nil)
+	token, _ := utils.GenerateJWT("2cfde543-ea6a-469f-b332-4e630a1cad8c", "hello", "ADMIN")
+	req.Header.Set("Authorization", "Bearer "+token)
 	suite.router.ServeHTTP(w, req)
 
 	suite.Equal(http.StatusBadRequest, w.Code)
@@ -455,6 +474,8 @@ func (suite *MedicalRecordDeliverySuite) TestUpdatePaymentStatus_NoStockAvailabl
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PUT", "/api/v1/medical-records/1", nil)
+	token, _ := utils.GenerateJWT("2cfde543-ea6a-469f-b332-4e630a1cad8c", "hello", "ADMIN")
+	req.Header.Set("Authorization", "Bearer "+token)
 	suite.router.ServeHTTP(w, req)
 
 	suite.Equal(http.StatusBadRequest, w.Code)
@@ -477,6 +498,8 @@ func (suite *MedicalRecordDeliverySuite) TestUpdatePaymentStatus_QuantityGreater
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PUT", "/api/v1/medical-records/1", nil)
+	token, _ := utils.GenerateJWT("2cfde543-ea6a-469f-b332-4e630a1cad8c", "hello", "ADMIN")
+	req.Header.Set("Authorization", "Bearer "+token)
 	suite.router.ServeHTTP(w, req)
 
 	suite.Equal(http.StatusBadRequest, w.Code)
@@ -499,6 +522,8 @@ func (suite *MedicalRecordDeliverySuite) TestUpdatePaymentStatus_DataNotFound() 
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PUT", "/api/v1/medical-records/1", nil)
+	token, _ := utils.GenerateJWT("2cfde543-ea6a-469f-b332-4e630a1cad8c", "hello", "ADMIN")
+	req.Header.Set("Authorization", "Bearer "+token)
 	suite.router.ServeHTTP(w, req)
 
 	suite.Equal(http.StatusBadRequest, w.Code)
