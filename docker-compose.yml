@@ -12,7 +12,7 @@ services:
       - db
   db:
     image: postgres:alpine
-    environtment:
+    environment:
       - POSTGRES_PASSWORD=RahasiaBanget123
       - POSTGRES_DATABASE=avenger_clinic_db
     volumes:
