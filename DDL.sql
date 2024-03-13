@@ -1,4 +1,4 @@
-CREATE DATABASE IF NOT EXISTS avengers_clinic_db;
+CREATE DATABASE IF NOT EXISTS avenger_clinic_db;
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
