@@ -77,7 +77,6 @@ func (suite *MedicalRecordDeliverySuite) TestCreateMedicalRecord_Success() {
 		},
 	}
 
-	// Mock the expected response from the use case
 	expectedMedicalRecord := medicalRecordDTO.Medical_Record{
 		ID:               "1",
 		Booking_ID:       requestPayload.Booking_ID,
@@ -106,17 +105,14 @@ func (suite *MedicalRecordDeliverySuite) TestCreateMedicalRecord_Success() {
 	}
 	suite.medicalRecordUCMock.On("CreateMedicalRecord", requestPayload).Return(expectedMedicalRecord, nil)
 
-	// Perform the request
 	w := httptest.NewRecorder()
 	reqBody, _ := json.Marshal(requestPayload)
 	req, _ := http.NewRequest("POST", "/api/v1/medical-records", bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
 	suite.router.ServeHTTP(w, req)
 
-	// Assert the response
 	suite.Equal(http.StatusCreated, w.Code)
 
-	// Parse the response body
 	var response struct {
 		ResponseCode    string                          `json:"responseCode"`
 		ResponseMessage string                          `json:"responseMessage"`
@@ -125,27 +121,22 @@ func (suite *MedicalRecordDeliverySuite) TestCreateMedicalRecord_Success() {
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	suite.NoError(err)
 
-	// Assert the response code, message, and data
 	suite.Equal("2010601", response.ResponseCode)
 	suite.Equal("data created", response.ResponseMessage)
 	suite.Equal(expectedMedicalRecord, response.Data)
 }
 
 func (suite *MedicalRecordDeliverySuite) TestCreateMedicalRecord_BadRequest() {
-	// Prepare request payload with missing required fields
 	requestPayload := medicalRecordDTO.Medical_Record_Request{}
 
-	// Perform the request
 	w := httptest.NewRecorder()
 	reqBody, _ := json.Marshal(requestPayload)
 	req, _ := http.NewRequest("POST", "/api/v1/medical-records", bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
 	suite.router.ServeHTTP(w, req)
 
-	// Assert the response
 	suite.Equal(http.StatusBadRequest, w.Code)
 
-	// Parse the response body
 	var response struct {
 		ResponseCode     string                   `json:"responseCode"`
 		ResponseMessage  string                   `json:"responseMessage"`
@@ -154,14 +145,12 @@ func (suite *MedicalRecordDeliverySuite) TestCreateMedicalRecord_BadRequest() {
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	suite.NoError(err)
 
-	// Assert the response code, message, and error description
 	suite.Equal("4000602", response.ResponseCode)
 	suite.Equal("bad request. required fields cannot be empty", response.ResponseMessage)
 	suite.NotEmpty(response.ErrorDescription)
 }
 
 func (suite *MedicalRecordDeliverySuite) TestCreateMedicalRecord_Error() {
-	// Prepare request payload
 	requestPayload := medicalRecordDTO.Medical_Record_Request{
 		Booking_ID:       "ea1c7e2c-3799-4ef7-a8e7-4ecf6c413151",
 		Diagnosis_Result: "Test diagnosis",
@@ -183,21 +172,17 @@ func (suite *MedicalRecordDeliverySuite) TestCreateMedicalRecord_Error() {
 		},
 	}
 
-	// Mock the expected error response from the use case
 	expectedError := errors.New("mocked error")
 	suite.medicalRecordUCMock.On("CreateMedicalRecord", requestPayload).Return(medicalRecordDTO.Medical_Record{}, expectedError)
 
-	// Perform the request
 	w := httptest.NewRecorder()
 	reqBody, _ := json.Marshal(requestPayload)
 	req, _ := http.NewRequest("POST", "/api/v1/medical-records", bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
 	suite.router.ServeHTTP(w, req)
 
-	// Assert the response
 	suite.Equal(http.StatusInternalServerError, w.Code)
 
-	// Parse the response body
 	var response struct {
 		ResponseCode    string `json:"responseCode"`
 		ResponseMessage string `json:"responseMessage"`
@@ -206,14 +191,12 @@ func (suite *MedicalRecordDeliverySuite) TestCreateMedicalRecord_Error() {
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	suite.NoError(err)
 
-	// Assert the response code, message, and error
 	suite.Equal("5000605", response.ResponseCode)
 	suite.Equal("internal server error", response.ResponseMessage)
 	suite.Equal("mocked error", response.Error)
 }
 
 func (suite *MedicalRecordDeliverySuite) TestCreateMedicalRecord_NoStockAvailable() {
-	// Prepare request payload
 	requestPayload := medicalRecordDTO.Medical_Record_Request{
 		Booking_ID:       "ea1c7e2c-3799-4ef7-a8e7-4ecf6c413151",
 		Diagnosis_Result: "Test diagnosis",
@@ -231,21 +214,17 @@ func (suite *MedicalRecordDeliverySuite) TestCreateMedicalRecord_NoStockAvailabl
 		},
 	}
 
-	// Mock the expected error response from the use case
 	expectedError := errors.New(constants.ErrNoStockAvailable)
 	suite.medicalRecordUCMock.On("CreateMedicalRecord", requestPayload).Return(medicalRecordDTO.Medical_Record{}, expectedError)
 
-	// Perform the request
 	w := httptest.NewRecorder()
 	reqBody, _ := json.Marshal(requestPayload)
 	req, _ := http.NewRequest("POST", "/api/v1/medical-records", bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
 	suite.router.ServeHTTP(w, req)
 
-	// Assert the response
 	suite.Equal(http.StatusBadRequest, w.Code)
 
-	// Parse the response body
 	var response struct {
 		ResponseCode     string                   `json:"responseCode"`
 		ResponseMessage  string                   `json:"responseMessage"`
@@ -254,13 +233,11 @@ func (suite *MedicalRecordDeliverySuite) TestCreateMedicalRecord_NoStockAvailabl
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	suite.NoError(err)
 
-	// Assert the response code, message, and error description
 	suite.Equal("4000603", response.ResponseCode)
 	suite.Equal(constants.ErrNoStockAvailable, response.ResponseMessage)
 }
 
 func (suite *MedicalRecordDeliverySuite) TestCreateMedicalRecord_QuantityGreaterThanStock() {
-	// Prepare request payload
 	requestPayload := medicalRecordDTO.Medical_Record_Request{
 		Booking_ID:       "ea1c7e2c-3799-4ef7-a8e7-4ecf6c413151",
 		Diagnosis_Result: "Test diagnosis",
@@ -268,7 +245,7 @@ func (suite *MedicalRecordDeliverySuite) TestCreateMedicalRecord_QuantityGreater
 		Medicine_Details: []medicalRecordDTO.Medicine_Details_Request{
 			{
 				Medicine_ID: "5ad34dce-d1bc-408e-9f82-e5c370cc01f5",
-				Quantity:    10, // Set quantity greater than available stock
+				Quantity:    10,
 			},
 		},
 		Action_Details: []medicalRecordDTO.Action_Details_Request{
@@ -278,21 +255,17 @@ func (suite *MedicalRecordDeliverySuite) TestCreateMedicalRecord_QuantityGreater
 		},
 	}
 
-	// Mock the expected error response from the use case
 	expectedError := errors.New(constants.ErrQuantityGreaterThanStock)
 	suite.medicalRecordUCMock.On("CreateMedicalRecord", requestPayload).Return(medicalRecordDTO.Medical_Record{}, expectedError)
 
-	// Perform the request
 	w := httptest.NewRecorder()
 	reqBody, _ := json.Marshal(requestPayload)
 	req, _ := http.NewRequest("POST", "/api/v1/medical-records", bytes.NewBuffer(reqBody))
 	req.Header.Set("Content-Type", "application/json")
 	suite.router.ServeHTTP(w, req)
 
-	// Assert the response
 	suite.Equal(http.StatusBadRequest, w.Code)
 
-	// Parse the response body
 	var response struct {
 		ResponseCode     string                   `json:"responseCode"`
 		ResponseMessage  string                   `json:"responseMessage"`
@@ -301,13 +274,11 @@ func (suite *MedicalRecordDeliverySuite) TestCreateMedicalRecord_QuantityGreater
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	suite.NoError(err)
 
-	// Assert the response code, message, and error description
 	suite.Equal("4000604", response.ResponseCode)
 	suite.Equal(constants.ErrQuantityGreaterThanStock, response.ResponseMessage)
 }
 
 func (suite *MedicalRecordDeliverySuite) TestGetMedicalRecords_Success() {
-	// Prepare mock data
 	mockMedicalRecords := []medicalRecordDTO.Medical_Record{
 		{
 			ID:               "1",
@@ -357,20 +328,16 @@ func (suite *MedicalRecordDeliverySuite) TestGetMedicalRecords_Success() {
 		},
 	}
 
-	// Mock the expected response from use case
 	suite.medicalRecordUCMock.On("GetMedicalRecords").Return(mockMedicalRecords, nil)
 
-	// Perform the request
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/v1/medical-records", nil)
 	//token, _ := utils.GenerateJWT("9d3cd7b1-ade2-4f8c-b215-9e74f0c87bf5", "admin", "ADMIN")
 	//req.Header.Set("Authorization", "Bearer "+token)
 	suite.router.ServeHTTP(w, req)
 
-	// Assert the response
 	suite.Equal(http.StatusOK, w.Code)
 
-	// Parse the response body
 	var response struct {
 		ResponseMessage string                            `json:"responseMessage"`
 		Data            []medicalRecordDTO.Medical_Record `json:"data"`
@@ -378,33 +345,26 @@ func (suite *MedicalRecordDeliverySuite) TestGetMedicalRecords_Success() {
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	suite.NoError(err)
 
-	// Assert the response message
 	suite.Equal("data received", response.ResponseMessage)
 
-	// Assert the data
 	suite.Equal(mockMedicalRecords, response.Data)
 }
 
 func (suite *MedicalRecordDeliverySuite) TestGetMedicalRecordByID_Success() {
-	// Prepare mock data
 	mockMedicalRecord := medicalRecordDTO.Medical_Record{
 		ID:               "1",
 		Booking_ID:       "booking1",
 		Diagnosis_Result: "diagnosis1",
 	}
 
-	// Mock the expected response from use case
 	suite.medicalRecordUCMock.On("GetMedicalRecordByID", "1").Return(mockMedicalRecord, nil)
 
-	// Perform the request
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/v1/medical-records/1", nil)
 	suite.router.ServeHTTP(w, req)
 
-	// Assert the response
 	suite.Equal(http.StatusOK, w.Code)
 
-	// Parse the response body
 	var response struct {
 		ResponseMessage string                          `json:"responseMessage"`
 		Data            medicalRecordDTO.Medical_Record `json:"data"`
@@ -412,27 +372,21 @@ func (suite *MedicalRecordDeliverySuite) TestGetMedicalRecordByID_Success() {
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	suite.NoError(err)
 
-	// Assert the response message
 	suite.Equal("data received", response.ResponseMessage)
 
-	// Assert the data
 	suite.Equal(mockMedicalRecord, response.Data)
 }
 
 func (suite *MedicalRecordDeliverySuite) TestGetMedicalRecordByID_NotFound() {
-	// Mock the expected error response from the use case
 	expectedError := errors.New("data not found")
 	suite.medicalRecordUCMock.On("GetMedicalRecordByID", "non_existent_id").Return(medicalRecordDTO.Medical_Record{}, expectedError)
 
-	// Perform the request
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/v1/medical-records/non_existent_id", nil)
 	suite.router.ServeHTTP(w, req)
 
-	// Assert the response
 	suite.Equal(http.StatusBadRequest, w.Code)
 
-	// Parse the response body
 	var response struct {
 		ResponseMessage string                          `json:"responseMessage"`
 		Data            medicalRecordDTO.Medical_Record `json:"data"`
@@ -440,15 +394,12 @@ func (suite *MedicalRecordDeliverySuite) TestGetMedicalRecordByID_NotFound() {
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	suite.NoError(err)
 
-	// Assert the response message
 	suite.Equal("data not found", response.ResponseMessage)
 
-	// Assert that the data is empty
 	suite.Equal(medicalRecordDTO.Medical_Record{}, response.Data)
 }
 
 func (suite *MedicalRecordDeliverySuite) TestUpdatePaymentStatus_Success() {
-	// Prepare mock data
 	mockMedicalRecord := medicalRecordDTO.Medical_Record{
 		ID:               "1",
 		Booking_ID:       "booking1",
@@ -456,18 +407,14 @@ func (suite *MedicalRecordDeliverySuite) TestUpdatePaymentStatus_Success() {
 		Payment_Status:   true,
 	}
 
-	// Mock the expected response from use case
 	suite.medicalRecordUCMock.On("UpdatePaymentStatus", "1").Return(mockMedicalRecord, nil)
 
-	// Perform the request
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PUT", "/api/v1/medical-records/1", nil)
 	suite.router.ServeHTTP(w, req)
 
-	// Assert the response
 	suite.Equal(http.StatusOK, w.Code)
 
-	// Parse the response body
 	var response struct {
 		ResponseMessage string                          `json:"responseMessage"`
 		Data            medicalRecordDTO.Medical_Record `json:"data"`
@@ -475,27 +422,21 @@ func (suite *MedicalRecordDeliverySuite) TestUpdatePaymentStatus_Success() {
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	suite.NoError(err)
 
-	// Assert the response message
 	suite.Equal("data updated", response.ResponseMessage)
 
-	// Assert the data
 	suite.Equal(mockMedicalRecord, response.Data)
 }
 
 func (suite *MedicalRecordDeliverySuite) TestUpdatePaymentStatus_PaymentAlreadyTrue() {
-	// Prepare mock data
 	mockError := errors.New(constants.ErrPaymentAlreadyTrue)
 	suite.medicalRecordUCMock.On("UpdatePaymentStatus", "1").Return(medicalRecordDTO.Medical_Record{}, mockError)
 
-	// Perform the request
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PUT", "/api/v1/medical-records/1", nil)
 	suite.router.ServeHTTP(w, req)
 
-	// Assert the response
 	suite.Equal(http.StatusBadRequest, w.Code)
 
-	// Parse the response body
 	var response struct {
 		ResponseMessage  string                          `json:"responseMessage"`
 		Data             medicalRecordDTO.Medical_Record `json:"data"`
@@ -504,25 +445,20 @@ func (suite *MedicalRecordDeliverySuite) TestUpdatePaymentStatus_PaymentAlreadyT
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	suite.NoError(err)
 
-	// Assert the response message and error description
 	suite.Equal(constants.ErrPaymentAlreadyTrue, response.ResponseMessage)
 	suite.Empty(response.Data)
 }
 
 func (suite *MedicalRecordDeliverySuite) TestUpdatePaymentStatus_NoStockAvailable() {
-	// Prepare mock data
 	mockError := errors.New(constants.ErrNoStockAvailable)
 	suite.medicalRecordUCMock.On("UpdatePaymentStatus", "1").Return(medicalRecordDTO.Medical_Record{}, mockError)
 
-	// Perform the request
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PUT", "/api/v1/medical-records/1", nil)
 	suite.router.ServeHTTP(w, req)
 
-	// Assert the response
 	suite.Equal(http.StatusBadRequest, w.Code)
 
-	// Parse the response body
 	var response struct {
 		ResponseMessage  string                          `json:"responseMessage"`
 		Data             medicalRecordDTO.Medical_Record `json:"data"`
@@ -531,25 +467,20 @@ func (suite *MedicalRecordDeliverySuite) TestUpdatePaymentStatus_NoStockAvailabl
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	suite.NoError(err)
 
-	// Assert the response message and error description
 	suite.Equal(constants.ErrNoStockAvailable, response.ResponseMessage)
 	suite.Empty(response.Data)
 }
 
 func (suite *MedicalRecordDeliverySuite) TestUpdatePaymentStatus_QuantityGreaterThanStock() {
-	// Prepare mock data
 	mockError := errors.New(constants.ErrQuantityGreaterThanStock)
 	suite.medicalRecordUCMock.On("UpdatePaymentStatus", "1").Return(medicalRecordDTO.Medical_Record{}, mockError)
 
-	// Perform the request
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PUT", "/api/v1/medical-records/1", nil)
 	suite.router.ServeHTTP(w, req)
 
-	// Assert the response
 	suite.Equal(http.StatusBadRequest, w.Code)
 
-	// Parse the response body
 	var response struct {
 		ResponseMessage  string                          `json:"responseMessage"`
 		Data             medicalRecordDTO.Medical_Record `json:"data"`
@@ -558,25 +489,20 @@ func (suite *MedicalRecordDeliverySuite) TestUpdatePaymentStatus_QuantityGreater
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	suite.NoError(err)
 
-	// Assert the response message and error description
 	suite.Equal(constants.ErrQuantityGreaterThanStock, response.ResponseMessage)
 	suite.Empty(response.Data)
 }
 
 func (suite *MedicalRecordDeliverySuite) TestUpdatePaymentStatus_DataNotFound() {
-	// Prepare mock data
 	mockError := errors.New("data not found")
 	suite.medicalRecordUCMock.On("UpdatePaymentStatus", "1").Return(medicalRecordDTO.Medical_Record{}, mockError)
 
-	// Perform the request
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PUT", "/api/v1/medical-records/1", nil)
 	suite.router.ServeHTTP(w, req)
 
-	// Assert the response
 	suite.Equal(http.StatusBadRequest, w.Code)
 
-	// Parse the response body
 	var response struct {
 		ResponseMessage  string                          `json:"responseMessage"`
 		Data             medicalRecordDTO.Medical_Record `json:"data"`
@@ -585,7 +511,6 @@ func (suite *MedicalRecordDeliverySuite) TestUpdatePaymentStatus_DataNotFound() 
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	suite.NoError(err)
 
-	// Assert the response message and error description
 	suite.Equal("data not found", response.ResponseMessage)
 	suite.Empty(response.Data)
 }
