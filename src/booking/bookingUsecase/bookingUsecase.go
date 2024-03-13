@@ -4,6 +4,7 @@ import (
 	"avengers-clinic/model/dto"
 	"avengers-clinic/model/entity"
 	"avengers-clinic/pkg/constants"
+	"avengers-clinic/pkg/utils"
 	"avengers-clinic/src/booking"
 	"avengers-clinic/src/doctorSchedule"
 	"errors"
@@ -42,19 +43,22 @@ func (bu bookingUsecase) GetOneByID(id uuid.UUID) (entity.Bookings, error) {
 	return data, nil
 }
 
-func (bu bookingUsecase) GetAllByDoctorID(doctorId uuid.UUID) ([]entity.Bookings, error) {
-	panic("not implemented") // TODO: Implement
-}
+func (bu bookingUsecase) GetBookingByScheduleID(scheduleId uuid.UUID, status string) ([]entity.Bookings, error) {
 
-func (bu bookingUsecase) GetByScheduleID() {
-	panic("not implemented") // TODO: Implement
+	arrStatus := utils.SanitizeStatusQuery(status)
+	data, err := bu.bookingRepo.GetBookingByScheduleID(scheduleId, arrStatus)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
 
 func (bu bookingUsecase) Create(input dto.CreateBooking) (entity.Bookings, error) {
 
 	sched, err := bu.scheduleRepo.RetrieveByID(input.DoctorScheduleID)
 	if err != nil {
-		return  entity.Bookings{}, fmt.Errorf(constants.ErrDocSchedNotExist)
+		return entity.Bookings{}, fmt.Errorf(constants.ErrDocSchedNotExist)
 	}
 
 	if input.MstScheduleID > sched.EndAt {

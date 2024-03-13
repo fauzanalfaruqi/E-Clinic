@@ -123,10 +123,6 @@ func (br bookingRepository) GetBookingByScheduleID(scheduleID uuid.UUID, status 
 	return data, nil
 }
 
-func (br bookingRepository) GetAllBookingByDoctorID(doctorId uuid.UUID) ([]entity.Bookings, error) {
-	return nil, nil
-}
-
 func (br bookingRepository) CreateBooking(input entity.Bookings) (entity.Bookings, error) {
 	sqlstat := `
 	

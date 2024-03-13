@@ -7,7 +7,7 @@ import (
 type DoctorSchedule struct {
 	ID           uuid.UUID  `json:"id,omitempty"`
 	DoctorID     uuid.UUID  `json:"doctor_id,omitempty"`
-	ScheduleDate string     `json:"shedule_date,omitempty"`
+	ScheduleDate string     `json:"schedule_date,omitempty"`
 	StartAt      int        `json:"start_at,omitempty"`
 	EndAt        int        `json:"end_at,omitempty"`
 	CreatedAt    string     `json:"created_at,omitempty"`

@@ -10,7 +10,6 @@ import (
 type (
 	BookingRepository interface {
 		GetAllBooking() ([]entity.Bookings, error)
-		GetAllBookingByDoctorID(doctorId uuid.UUID) ([]entity.Bookings, error)
 		GetOneByID(id uuid.UUID) (entity.Bookings, error)
 		GetBookingByScheduleID(scheduleId uuid.UUID, status []string) ([]entity.Bookings, error)
 		CreateBooking(input entity.Bookings) (entity.Bookings, error)
@@ -22,9 +21,8 @@ type (
 
 	BookingUsecase interface {
 		GetAll() ([]entity.Bookings, error)
-		GetAllByDoctorID(doctorId uuid.UUID) ([]entity.Bookings, error)
 		GetOneByID(id uuid.UUID) (entity.Bookings, error)
-		GetByScheduleID()
+		GetBookingByScheduleID(scheduleId uuid.UUID, status string) ([]entity.Bookings, error)
 		Create(input dto.CreateBooking) (entity.Bookings, error)
 		EditSchedule(id uuid.UUID, input dto.UpdateBookingSchedule) (entity.Bookings, error)
 		Cancel(id uuid.UUID) (entity.Bookings, error)

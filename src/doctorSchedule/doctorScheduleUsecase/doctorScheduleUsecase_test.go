@@ -3,6 +3,7 @@ package doctorScheduleUsecase
 import (
 	"avengers-clinic/model/dto"
 	"avengers-clinic/model/entity"
+	"avengers-clinic/pkg/utils"
 	"avengers-clinic/src/doctorSchedule"
 	"testing"
 
@@ -109,21 +110,123 @@ func (mb *mockBookingRepo) FinishBooking(id uuid.UUID) error {
 	return args.Error(0)
 }
 
-
-
-
 type doctorUcTestSuite struct {
 	suite.Suite
-	doctorRepo *mockDoctorScheduleRepo
+	doctorRepo  *mockDoctorScheduleRepo
 	bookingRepo *mockBookingRepo
-	doctorUC   doctorSchedule.DoctorScheduleUsecase
+	doctorUC    doctorSchedule.DoctorScheduleUsecase
 }
 
 func (suite *doctorUcTestSuite) SetupTest() {
 	suite.doctorRepo = new(mockDoctorScheduleRepo)
+	suite.bookingRepo = new(mockBookingRepo)
 	suite.doctorUC = NewDoctorScheduleUsecase(suite.doctorRepo, suite.bookingRepo)
 }
 
+var (
+	id, _       = uuid.Parse("74d93144-6f2e-4bbc-9f89-973c62d3ac54")
+	doctorID, _ = uuid.Parse("5bc18dd0-58cb-4612-8dc3-5fc2419b7f29")
+	dayOfWeeks  = "1#2"
+	uuids       = uuid.UUIDs{}
+	startDate   = "2024-03-11"
+	endDate     = "2024-03-17"
+	status      = "waiting"
+	updatedAt   = utils.GetNow()
+	arrExpected = []entity.DoctorSchedule{
+		{
+			ID:           id,
+			DoctorID:     doctorID,
+			ScheduleDate: "2024-03-14",
+			StartAt:      1,
+			EndAt:        9,
+			CreatedAt:    "2024-03-12 22:39:22.245736",
+		},
+	}
+	expected = entity.DoctorSchedule{
+		ID:           id,
+		DoctorID:     doctorID,
+		ScheduleDate: "2024-03-14",
+		StartAt:      1,
+		EndAt:        9,
+		CreatedAt:    "2024-03-12 22:39:22.245736",
+		Schedules:    bookings,
+	}
+	bookings = []entity.Bookings{
+		{
+			ID:               id,
+			DoctorScheduleID: id,
+			PatientID:        id,
+			MstScheduleID:    1,
+			Complaint:        "test",
+			Status:           status,
+			CreatedAt:        "2024-03-12 22:39:22.245736",
+		},
+	}
+)
+
+func (suite *doctorUcTestSuite) TestGetAll() {
+	suite.doctorRepo.On("RetrieveAll").Return(arrExpected, nil)
+	actual, err := suite.doctorUC.GetAll(startDate, endDate)
+	suite.Nil(err)
+	suite.Equal(arrExpected, actual)
+}
+
+func (suite *doctorUcTestSuite) TestGetByID() {
+	suite.doctorRepo.On("RetrieveByID").Return(expected, nil)
+	suite.bookingRepo.On("GetBookingByScheduleID").Return(bookings, nil)
+	actual, err := suite.doctorUC.GetByID(id, status)
+	suite.Nil(err)
+	suite.Equal(expected, actual)
+}
+
+func (suite *doctorUcTestSuite) TestCreate() {
+	suite.doctorRepo.On("InsertSchedule").Return(uuids, nil)
+	suite.doctorRepo.On("GetByIDs").Return(arrExpected, nil)
+	actual, err := suite.doctorUC.CreateSchedule(dto.CreateDoctorSchedule{})
+	suite.Nil(err)
+	suite.Equal(arrExpected, actual)
+}
+
+func (suite *doctorUcTestSuite) TestGetMySchedule() {
+	suite.doctorRepo.On("GetMySchedule").Return(arrExpected, nil)
+	suite.bookingRepo.On("GetBookingByScheduleID").Return(bookings, nil)
+	actual, err := suite.doctorUC.GetMySchedule(doctorID, dayOfWeeks, status, startDate, endDate)
+	suite.Nil(err)
+	suite.Equal(arrExpected, actual)
+}
+
+func (suite *doctorUcTestSuite) TestUpdate() {
+
+	expected := entity.DoctorSchedule{
+		ID:           id,
+		DoctorID:     doctorID,
+		ScheduleDate: "2024-03-14",
+		StartAt:      1,
+		EndAt:        9,
+		CreatedAt:    "2024-03-12 22:39:22.245736",
+		UpdatedAt:    &updatedAt,
+	}
+
+	suite.doctorRepo.On("RetrieveByID").Return(expected, nil)
+	suite.doctorRepo.On("UpdateSchedule").Return(nil)
+
+	actual, err := suite.doctorUC.UpdateSchedule(id, dto.UpdateSchedule{})
+	suite.Nil(err)
+	suite.Equal(expected, actual)
+}
+
+func (suite *doctorUcTestSuite) TestDelete() {
+	suite.doctorRepo.On("RetrieveByID").Return(expected, nil)
+	suite.doctorRepo.On("DeleteSchedule").Return(nil)
+	err := suite.doctorUC.DeleteSchedule(id)
+	suite.Nil(err)
+}
+
+func (suite *doctorUcTestSuite) TestRestore() {
+	suite.doctorRepo.On("Restore").Return(nil)
+	err := suite.doctorUC.Restore(id)
+	suite.Nil(err)
+}
 
 func TestDoctorUsecase(t *testing.T) {
 	suite.Run(t, new(doctorUcTestSuite))

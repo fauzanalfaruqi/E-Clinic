@@ -165,7 +165,7 @@ func (dd doctorScheduleDelivery) DeleteSchedule(ctx *gin.Context) {
 		json.NewResponseError(ctx, err.Error(), constants.DoctorScheduleService, "01")
 		return
 	}
-	json.NewResponseCreated(ctx, nil, "deleted", constants.DoctorScheduleService, "01")
+	json.NewResponseSuccess(ctx, nil, "deleted", constants.DoctorScheduleService, "01")
 }
 
 
@@ -184,5 +184,5 @@ func (dd doctorScheduleDelivery) RestoreSchedule(ctx *gin.Context) {
 		json.NewResponseError(ctx, err.Error(), constants.DoctorScheduleService, "01")
 		return
 	}
-	json.NewResponseCreated(ctx, nil, "restored", constants.DoctorScheduleService, "01")
+	json.NewResponseSuccess(ctx, nil, "restored", constants.DoctorScheduleService, "01")
 }

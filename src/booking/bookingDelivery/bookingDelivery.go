@@ -7,7 +7,6 @@ import (
 	"avengers-clinic/pkg/utils"
 	"avengers-clinic/src/booking"
 	"database/sql"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -26,6 +25,7 @@ func NewBookingDelivery(v1Group *gin.RouterGroup, bookingUC booking.BookingUseca
 	{
 		bookingGroup.GET("", handler.GetAll)
 		bookingGroup.GET("/:id", handler.GetByID)
+		bookingGroup.GET("/schedule/:id", handler.GetByScheduleID)
 		bookingGroup.POST("", handler.Create)
 		bookingGroup.PUT("/:id", handler.EditSchedule)
 		bookingGroup.PUT("/done/:id", handler.Done)
@@ -34,19 +34,6 @@ func NewBookingDelivery(v1Group *gin.RouterGroup, bookingUC booking.BookingUseca
 }
 
 func (bd bookingDelivery) GetAll(ctx *gin.Context) {
-
-	//Get query date
-	//If not exist, the date is now()
-	date := ctx.Query("date")
-	if date == "" {
-		date = time.Now().Format("2006-01-02")
-	} else {
-
-		if _, err := time.Parse("2006-01-02", date); err != nil {
-			json.NewResponseBadRequest(ctx, nil, "invalid date type", constants.BookingService, "01")
-			return
-		}
-	}
 
 	//Get the datas
 	data, err := bd.bookingUC.GetAll()
@@ -83,15 +70,21 @@ func (bd bookingDelivery) GetByID(ctx *gin.Context) {
 
 }
 
-func (bd bookingDelivery) GetByDoctorID(ctx *gin.Context) {
-	id, err := uuid.Parse(ctx.Param("id"))
+func (bd bookingDelivery) GetByScheduleID(ctx *gin.Context) {
+
+	//Get id from url param, parse to uuid
+	schedID, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
 		json.NewResponseBadRequest(ctx, nil, err.Error(), constants.BookingService, "01")
 		return
 	}
 
-	//get data
-	data, err := bd.bookingUC.GetAllByDoctorID(id)
+	status := ctx.Query("status")
+
+	//Get data
+	data, err := bd.bookingUC.GetBookingByScheduleID(schedID, status)
+
+	//validating error
 	if err != nil && err == sql.ErrNoRows {
 		json.NewResponseBadRequest(ctx, nil, "data not found", constants.BookingService, "01")
 		return
@@ -121,13 +114,13 @@ func (bd bookingDelivery) Create(ctx *gin.Context) {
 
 	//Create booking
 	data, err := bd.bookingUC.Create(input)
-	//if create failed, it return err no rows 
+	//if create failed, it return err no rows
 	//because we do use validation create where not exist
 	//and returnin ID
 	if err != nil && err == sql.ErrNoRows {
 		json.NewResponseBadRequest(ctx, nil, constants.ErrScheduleTaken, constants.BookingService, "01")
 		return
-	//we also use validate match doctor_schedules.day_of_week == day_of_week(bookings.booking_date)
+		//we also use validate match doctor_schedules.day_of_week == day_of_week(bookings.booking_date)
 	} else if err != nil && (err.Error() == constants.ErrDocSchedNotExist || err.Error() == constants.ErrScheduleNotMatch) {
 		json.NewResponseBadRequest(ctx, nil, err.Error(), constants.BookingService, "01")
 		return
