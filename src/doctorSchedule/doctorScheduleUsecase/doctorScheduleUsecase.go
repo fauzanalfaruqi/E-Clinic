@@ -67,7 +67,12 @@ func (du doctorScheduleUsecase) CreateSchedule(input dto.CreateDoctorSchedule) (
 
 	}
 
-	data, err := du.scheduleRepo.InsertSchedule(input)
+	ids, err := du.scheduleRepo.InsertSchedule(input)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := du.scheduleRepo.GetByIDs(ids)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +191,6 @@ func sanitizeDowQuery(dayOfWeek string) []int {
 func sanitizeStatusQuery(status string) []string {
 	var arrStatus []string
 
-	fmt.Println(status)
 	if status != "" {
 		arrStr := strings.Split(status, "#")
 		for _, v := range arrStr {
@@ -207,7 +211,6 @@ func sanitizeStatusQuery(status string) []string {
 		}
 	}
 
-	fmt.Println(arrStatus)
 	return arrStatus
 }
 

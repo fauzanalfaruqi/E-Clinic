@@ -7,7 +7,6 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -63,10 +62,10 @@ func (ds doctorScheduleRepository) GetMySchedule(doctorId uuid.UUID, daysOfWeek 
 		//Start from SUNDAY = 0 .... SATURDAY = 6
 		sqlstat += " AND EXTRACT(dow from date (schedule_date)) = ANY($4)"
 		rows, err = ds.db.Query(sqlstat, doctorId, startDate, endDate, pq.Array(daysOfWeek))
-	}else {
+	} else {
 		rows, err = ds.db.Query(sqlstat, doctorId, startDate, endDate)
 	}
-	
+
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +101,7 @@ func (ds doctorScheduleRepository) RetrieveByID(id uuid.UUID) (entity.DoctorSche
 
 }
 
-func (ds doctorScheduleRepository) InsertSchedule(input dto.CreateDoctorSchedule) ([]entity.DoctorSchedule, error) {
+func (ds doctorScheduleRepository) InsertSchedule(input dto.CreateDoctorSchedule) (uuid.UUIDs, error) {
 
 	insertQuery := "INSERT INTO doctor_schedules(doctor_id, schedule_date, start_at, end_at) VALUES"
 	returnIDQ := " RETURNING id;"
@@ -121,18 +120,8 @@ func (ds doctorScheduleRepository) InsertSchedule(input dto.CreateDoctorSchedule
 
 	sqlstat := insertQuery + strings.Join(inserts, ",") + returnIDQ
 
-	//prepare the statement
-	stmt, err := ds.db.Prepare(sqlstat)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return nil, err
-	}
-
-	//close stmt after use
-	defer stmt.Close()
-
 	//format all vals at once
-	rows, err := stmt.Query(vals...)
+	rows, err := ds.db.Query(sqlstat, vals...)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return nil, err
@@ -149,7 +138,7 @@ func (ds doctorScheduleRepository) InsertSchedule(input dto.CreateDoctorSchedule
 	}
 	rows.Close()
 
-	return ds.GetByIDs(ids)
+	return ids, nil
 }
 
 func (ds doctorScheduleRepository) GetByIDs(ids uuid.UUIDs) ([]entity.DoctorSchedule, error) {
@@ -162,19 +151,19 @@ func (ds doctorScheduleRepository) GetByIDs(ids uuid.UUIDs) ([]entity.DoctorSche
 		vals = append(vals, v)
 	}
 
-	query := fmt.Sprintf("SELECT id, doctor_id, to_char(schedule_date, 'YYYY-MM-DD'), start_at, end_at, created_at, updated_at, deleted_at FROM doctor_schedules WHERE id IN (%s)",
+	query := fmt.Sprintf("SELECT id, doctor_id, to_char(schedule_date, 'YYYY-MM-DD'), start_at, end_at, created_at, updated_at FROM doctor_schedules WHERE id IN (%s)",
 		strings.Join(placeholders, ","))
 
 	rows, err := ds.db.Query(query, vals...)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return scanDoctorSchedules(rows)
 }
 
 func (ds doctorScheduleRepository) UpdateSchedule(id uuid.UUID, data entity.DoctorSchedule) error {
-	
+
 	sqlStat := "UPDATE doctor_schedules SET schedule_date = $1, start_at = $2, end_at = $3, updated_at = $4 WHERE id = $5;"
 
 	_, err := ds.db.Exec(sqlStat, data.ScheduleDate, data.StartAt, data.EndAt, data.UpdatedAt, id)
@@ -186,9 +175,8 @@ func (ds doctorScheduleRepository) UpdateSchedule(id uuid.UUID, data entity.Doct
 }
 
 func (ds doctorScheduleRepository) DeleteSchedule(id uuid.UUID) error {
-	now := time.Now().Format("2006-01-02 15:04:05")
-	sqlStat := "UPDATE doctor_schedules SET deleted_at = $1 WHERE id = $2"
-	_, err := ds.db.Exec(sqlStat, now, id)
+	sqlStat := "UPDATE doctor_schedules SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1"
+	_, err := ds.db.Exec(sqlStat, id)
 	if err != nil {
 		return err
 	}
@@ -206,8 +194,7 @@ func (ds doctorScheduleRepository) Restore(id uuid.UUID) error {
 	return nil
 }
 
-
-func (ds doctorScheduleRepository) SearchByDateAndDoctorID(date string, doctorID uuid.UUID)  error {
+func (ds doctorScheduleRepository) SearchByDateAndDoctorID(date string, doctorID uuid.UUID) error {
 
 	tr := false
 	sqlStat := "SELECT true FROM doctor_schedules WHERE doctor_id = $1 AND schedule_date = $2"

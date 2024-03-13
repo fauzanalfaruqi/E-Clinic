@@ -25,9 +25,14 @@ func (mr *mockDoctorScheduleRepo) RetrieveByID(id uuid.UUID) (entity.DoctorSched
 	return args.Get(0).(entity.DoctorSchedule), args.Error(1)
 }
 
-func (mr *mockDoctorScheduleRepo) InsertSchedule(input dto.CreateDoctorSchedule) ([]entity.DoctorSchedule, error) {
+func (mr *mockDoctorScheduleRepo) GetByIDs(id uuid.UUIDs) ([]entity.DoctorSchedule, error) {
 	args := mr.Called()
 	return args.Get(0).([]entity.DoctorSchedule), args.Error(1)
+}
+
+func (mr *mockDoctorScheduleRepo) InsertSchedule(input dto.CreateDoctorSchedule) (uuid.UUIDs, error) {
+	args := mr.Called()
+	return args.Get(0).(uuid.UUIDs), args.Error(1)
 }
 
 func (mr *mockDoctorScheduleRepo) GetMySchedule(doctorId uuid.UUID, dayOfWeek []int, startDate string, endDate string) ([]entity.DoctorSchedule, error) {

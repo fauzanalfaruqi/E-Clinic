@@ -11,9 +11,10 @@ type (
 	DoctorScheduleRepository interface {
 		RetrieveAll(startDate, endDate string) ([]entity.DoctorSchedule, error)
 		RetrieveByID(id uuid.UUID) (entity.DoctorSchedule, error)
-		InsertSchedule(input dto.CreateDoctorSchedule) ([]entity.DoctorSchedule, error)
+		InsertSchedule(input dto.CreateDoctorSchedule) (uuid.UUIDs, error)
 		GetMySchedule(doctorId uuid.UUID, dayOfWeek []int, startDate, endDate string) ([]entity.DoctorSchedule, error)
 		UpdateSchedule(id uuid.UUID, input entity.DoctorSchedule) (error)
+		GetByIDs(uuid.UUIDs) ([]entity.DoctorSchedule, error)
 		DeleteSchedule(id uuid.UUID) error
 		Restore(id uuid.UUID) error
 		SearchByDateAndDoctorID(date string, doctorID uuid.UUID) error
