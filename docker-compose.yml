@@ -7,7 +7,7 @@ services:
     ports:
       - "8080:8080"
     networks:
-      - avengerclinic_net
+      - avenger_clinic_net
     depends_on:
       - db
   db:
@@ -16,11 +16,11 @@ services:
       - POSTGRES_PASSWORD=RahasiaBanget123
       - POSTGRES_DATABASE=avenger_clinic_db
     volumes:
-      - avenger-clinic-backup:/var/lib/postgresql/data
+      - avenger-clinic-volume:/var/lib/postgresql/data
     networks:
-      - avengerclinic_net
+      - avenger_clinic_net
 volumes:
-  avenger-clinic-backup:
+  avenger-clinic-volume:
 networks:
-  avengerclinic_net:
+  avenger_clinic_net:
     driver: bridge

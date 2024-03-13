@@ -6,6 +6,16 @@ WORKDIR /app
 
 COPY . .
 
+RUN go mod download
+
+RUN go build -o avenger-clinic
+
+# Final stage
+FROM alpine
+WORKDIR /app
+
+COPY --from=build /app/avenger-clinic /app/avenger-clinic
+
 ENV DB_HOST=db
 ENV DB_PORT=5432
 ENV DB_USER=postgres
@@ -17,15 +27,5 @@ ENV MAX_LIFE_TIME=1h
 
 ENV PORT=8080
 ENV LOG_MODE=1
-
-RUN go mod download
-
-RUN go build -o avenger-clinic
-
-# Final stage
-FROM alpine
-WORKDIR /app
-
-COPY --from=build /app/avenger-clinic /app/avenger-clinic
 
 ENTRYPOINT ["/app/avenger-clinic"]
