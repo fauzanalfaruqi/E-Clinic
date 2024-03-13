@@ -4,6 +4,7 @@ import (
 	"avengers-clinic/model/dto"
 	"avengers-clinic/model/dto/json"
 	"avengers-clinic/pkg/constants"
+	"avengers-clinic/pkg/middleware"
 	"avengers-clinic/pkg/utils"
 	"avengers-clinic/src/booking"
 	"database/sql"
@@ -23,13 +24,13 @@ func NewBookingDelivery(v1Group *gin.RouterGroup, bookingUC booking.BookingUseca
 
 	bookingGroup := v1Group.Group("/booking")
 	{
-		bookingGroup.GET("", handler.GetAll)
-		bookingGroup.GET("/:id", handler.GetByID)
-		bookingGroup.GET("/schedule/:id", handler.GetByScheduleID)
-		bookingGroup.POST("", handler.Create)
-		bookingGroup.PUT("/:id", handler.EditSchedule)
-		bookingGroup.PUT("/done/:id", handler.Done)
-		bookingGroup.PUT("/cancel/:id", handler.Cancel)
+		bookingGroup.GET("", middleware.JwtAuth("ADMIN", "DOCTOR"), handler.GetAll)
+		bookingGroup.GET("/:id", middleware.JwtAuth("ADMIN", "DOCTOR", "PATIENT"), handler.GetByID)
+		bookingGroup.GET("/schedule/:id", middleware.JwtAuth("ADMIN", "DOCTOR", "PATIENT"), handler.GetByScheduleID)
+		bookingGroup.POST("", middleware.JwtAuth("ADMIN", "PATIENT"), handler.Create)
+		bookingGroup.PUT("/:id", middleware.JwtAuth("ADMIN", "PATIENT"), handler.EditSchedule)
+		bookingGroup.PUT("/done/:id", middleware.JwtAuth("ADMIN", "DOCTOR", "PATIENT"), handler.Done)
+		bookingGroup.PUT("/cancel/:id", middleware.JwtAuth("ADMIN", "PATIENT"), handler.Cancel)
 	}
 }
 

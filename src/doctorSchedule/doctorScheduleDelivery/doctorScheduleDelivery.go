@@ -4,6 +4,7 @@ import (
 	"avengers-clinic/model/dto"
 	"avengers-clinic/model/dto/json"
 	"avengers-clinic/pkg/constants"
+	"avengers-clinic/pkg/middleware"
 	"avengers-clinic/pkg/utils"
 	"avengers-clinic/src/doctorSchedule"
 	"database/sql"
@@ -23,13 +24,13 @@ func NewDoctorScheduleDelivery(v1Group *gin.RouterGroup, scheduleUC doctorSchedu
 
 	doctorScheduleGroup := v1Group.Group("/doctor-schedule")
 	{
-		doctorScheduleGroup.GET("", handler.GetAll)
-		doctorScheduleGroup.GET("/:id", handler.GetByID)
-		doctorScheduleGroup.POST("", handler.CreateSchedule)
-		doctorScheduleGroup.PUT("/:id", handler.UpdateSchedule)
-		doctorScheduleGroup.DELETE("/:id", handler.DeleteSchedule)
-		doctorScheduleGroup.GET("/restore/:id", handler.RestoreSchedule)
-		doctorScheduleGroup.GET("/my-schedule/:doctor-id", handler.GetMySchedule)
+		doctorScheduleGroup.GET("", middleware.JwtAuth("ADMIN", "PATIENT"), handler.GetAll)
+		doctorScheduleGroup.GET("/:id", middleware.JwtAuth("ADMIN", "PATIENT", "DOCTOR"), handler.GetByID)
+		doctorScheduleGroup.POST("", middleware.JwtAuth("ADMIN", "DOCTOR"), handler.CreateSchedule)
+		doctorScheduleGroup.PUT("/:id", middleware.JwtAuth("ADMIN", "DOCTOR"), handler.UpdateSchedule)
+		doctorScheduleGroup.DELETE("/:id", middleware.JwtAuth("ADMIN", "DOCTOR"), handler.DeleteSchedule)
+		doctorScheduleGroup.GET("/restore/:id", middleware.JwtAuth("ADMIN", "DOCTOR"), handler.RestoreSchedule)
+		doctorScheduleGroup.GET("/my-schedule/:doctor-id", middleware.JwtAuth("ADMIN", "DOCTOR"), handler.GetMySchedule)
 	}
 }
 
