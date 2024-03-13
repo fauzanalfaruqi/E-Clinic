@@ -1,122 +1,110 @@
-CREATE DATABASE IF NOT EXISTS avenger_clinic;
+CREATE DATABASE IF NOT EXISTS avengers_clinic_db;
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TYPE role AS ENUM ('ADMIN', 'DOCTOR', 'PATIENT');
+CREATE TYPE user_role AS ENUM ('ADMIN', 'DOCTOR', 'PATIENT');
+
+CREATE TYPE booking_status AS ENUM('WAITING', 'CANCELED', 'DONE');
+
+CREATE TYPE medicine_type AS ENUM('CAIR','TABLET','OLES','TETES','KAPSUL');
 
 CREATE TABLE users (
   id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-  username varchar NOT NULL,
-  email varchar NOT NULL,
-  password varchar NOT NULL,
-  role role NOT NULL,
-  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp,
-  deleted_at timestamp
-);
-
-CREATE TABLE doctors (
-  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-  user_id uuid NOT NULL,
-  name varchar NOT NULL,
-  specialization varchar NOT NULL,
-  consultation_fee int NOT NULL,
-  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp,
-  deleted_at timestamp
-);
-
-CREATE TABLE doctor_schedules (
-  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-  doctor_id uuid NOT NULL,
-  start_date timestamp NOT NULL,
-  end_date timestamp NOT NULL,
-  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp,
-  deleted_at timestamp
-);
-
-CREATE TABLE patients (
-  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-  user_id uuid NOT NULL,
-  name varchar NOT NULL,
-  address text,
-  phone_number varchar NOT NULL,
-  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp,
-  deleted_at timestamp
+  username VARCHAR NOT NULL UNIQUE,
+  password VARCHAR NOT NULL,
+  role user_role NOT NULL,
+  specialization VARCHAR,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP,
+  deleted_at TIMESTAMP
 );
 
 CREATE TABLE medicines (
   id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-  name varchar NOT NULL,
-  medicine_type varchar NOT NULL,
-  price int NOT NULL,
-  stock int DEFAULT 0,
+  name VARCHAR NOT NULL,
+  medicine_type medicine_type not null,
+  price INT NOT NULL,
+  stock INT DEFAULT 0,
   description text,
-  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp,
-  deleted_at timestamp
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP,
+  deleted_at TIMESTAMP
+);
+
+CREATE TABLE actions (
+  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+  name VARCHAR NOT NULL UNIQUE,
+  price INT NOT NULL,
+  description text,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP,
+  deleted_at TIMESTAMP
+);
+
+CREATE TABLE doctor_schedules (
+  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+  doctor_id uuid NOT NULL REFERENCES users (id),
+  day_of_week INT NOT NULL,
+  start_at TIME NOT NULL,
+  end_at TIME NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP,
+  deleted_at TIMESTAMP
+);
+
+CREATE TABLE mst_schedule(
+  id INT PRIMARY KEY,
+  start_at TIME NOT NULL,
+  end_at TIME NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP,
+  deleted_at TIMESTAMP
 );
 
 CREATE TABLE bookings (
-  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-  patient_id uuid NOT NULL,
-  doctor_id uuid NOT NULL,
-  schedule timestamp NOT NULL,
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  patient_id uuid NOT NULL REFERENCES users (id),
+  doctor_schedule_id uuid NOT NULL REFERENCES doctor_schedules(id),
+  booking_date DATE NOT NULL,
+  mst_schedule_id int NOT NULL REFERENCES mst_schedule(id),
+  status booking_status NOT NULL,
   complaint text NOT NULL,
-  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp,
-  deleted_at timestamp
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP,
+  deleted_at TIMESTAMP
 );
 
 CREATE TABLE medical_records (
   id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-  booking_id uuid NOT NULL,
+  booking_id uuid NOT NULL REFERENCES bookings (id),
   diagnosis_results text NOT NULL,
-  consultation_fee int,
-  total_amount int,
-  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp,
-  deleted_at timestamp
-);
-
-CREATE TABLE medical_record_details (
-  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-  medical_record_id uuid NOT NULL,
-  medicine_id uuid NOT NULL,
-  medicine_price int,
-  quantity int NOT NULL,
-  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp,
-  deleted_at timestamp
-);
-
-CREATE TABLE bills (
-  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-  medical_record_id uuid NOT NULL,
-  bill_date timestamp NOT NULL,
+  total_medicine int,
+  total_action int,
   total_amount int,
   payment_status bool,
-  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp,
-  deleted_at timestamp
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP,
+  deleted_at TIMESTAMP
 );
 
-ALTER TABLE doctors ADD FOREIGN KEY (user_id) REFERENCES users (id);
+CREATE TABLE medical_record_medicine_details (
+  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+  medical_record_id uuid NOT NULL REFERENCES medical_records (id),
+  medicine_id uuid NOT NULL REFERENCES medicines (id),
+  medicine_price int,
+  quantity INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP,
+  deleted_at TIMESTAMP
+);
 
-ALTER TABLE doctor_schedules ADD FOREIGN KEY (doctor_id) REFERENCES doctors (id);
+CREATE TABLE medical_record_action_details (
+  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+  medical_record_id uuid NOT NULL REFERENCES medical_records (id),
+  action_id uuid NOT NULL REFERENCES actions (id),
+  action_price int,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP,
+  deleted_at TIMESTAMP
+);
 
-ALTER TABLE patients ADD FOREIGN KEY (user_id) REFERENCES users (id);
-
-ALTER TABLE bookings ADD FOREIGN KEY (doctor_id) REFERENCES doctors (id);
-
-ALTER TABLE medical_records ADD FOREIGN KEY (booking_id) REFERENCES bookings (id);
-
-ALTER TABLE bills ADD FOREIGN KEY (medical_record_id) REFERENCES medical_records (id);
-
-ALTER TABLE bookings ADD FOREIGN KEY (patient_id) REFERENCES patients (id);
-
-ALTER TABLE medical_record_details ADD FOREIGN KEY (medical_record_id) REFERENCES medical_records (id);
-
-ALTER TABLE medical_record_details ADD FOREIGN KEY (medicine_id) REFERENCES medicines (id);
