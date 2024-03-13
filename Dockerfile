@@ -6,14 +6,26 @@ WORKDIR /app
 
 COPY . .
 
+ENV DB_HOST=db
+ENV DB_PORT=5432
+ENV DB_USER=postgres
+ENV DB_PASS=RahasiaBanget123
+ENV DB_NAME=avengers_clinic_db
+ENV MAX_IDLE=1
+ENV MAX_CONN=2
+ENV MAX_LIFE_TIME=1h
+
+ENV PORT=8080
+ENV LOG_MODE=1
+
 RUN go mod download
 
-RUN go build -o avenger-clinic
+RUN go build -o avengers-clinic
 
 # Final stage
 FROM alpine
 WORKDIR /app
 
-COPY --from=build /app/avenger-clinic /app/avenger-clinic
+COPY --from=build /app/avengers-clinic /app/avengers-clinic
 
-ENTRYPOINT ["/app/avenger-clinic"]
+ENTRYPOINT ["/app/avengers-clinic"]
