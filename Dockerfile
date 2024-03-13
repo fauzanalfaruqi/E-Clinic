@@ -8,12 +8,12 @@ COPY . .
 
 RUN go mod download
 
-RUN go build -o avengers-clinic
+RUN go build -o avenger-clinic
 
 # Final stage
 FROM alpine
 WORKDIR /app
 
-COPY --from=build /app/avengers-clinic /app/avengers-clinic
+COPY --from=build /app/avenger-clinic /app/avenger-clinic
 
-ENTRYPOINT ["/app/avengers-clinic"]
+ENTRYPOINT ["/app/avenger-clinic"]

@@ -1,26 +1,26 @@
 version: "3.8"
 services:
-  avengers-clinic:
+  avenger-clinic:
     build: .
     env_file:
-      - /home/ubuntu/avenger-clinic/.env
+      - .env
     ports:
       - "8080:8080"
     networks:
-      - avengersclinic_net
+      - avengerclinic_net
     depends_on:
       - db
   db:
     image: postgres:alpine
     environtment:
       - POSTGRES_PASSWORD=RahasiaBanget123
-      - POSTGRES_DATABASE=avengers_clinic_db
+      - POSTGRES_DATABASE=avenger_clinic_db
     volumes:
-      - avengers-clinic-backup:/var/lib/postgresql/data
+      - avenger-clinic-backup:/var/lib/postgresql/data
     networks:
-      - avengersclinic_net
+      - avengerclinic_net
 volumes:
-  avengers-clinic-backup:
+  avenger-clinic-backup:
 networks:
-  avengersclinic_net:
+  avengerclinic_net:
     driver: bridge
