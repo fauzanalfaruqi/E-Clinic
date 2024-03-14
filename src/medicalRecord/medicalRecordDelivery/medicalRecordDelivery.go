@@ -4,6 +4,7 @@ import (
 	"avengers-clinic/model/dto/json"
 	"avengers-clinic/model/dto/medicalRecordDTO"
 	"avengers-clinic/pkg/constants"
+	"avengers-clinic/pkg/middleware"
 	"avengers-clinic/pkg/utils"
 	"avengers-clinic/src/medicalRecord"
 
@@ -21,10 +22,10 @@ func NewMedicalRecordDelivery(v1Group *gin.RouterGroup, medicalRecordUC medicalR
 
 	medicalRecordGoup := v1Group.Group("/medical-records")
 	{
-		medicalRecordGoup.POST("", handler.createMedicalRecord)
-		medicalRecordGoup.GET("", handler.getMedicalRecords)
-		medicalRecordGoup.GET("/:id", handler.getMedicalRecordByID)
-		medicalRecordGoup.PUT("/:id", handler.updatePaymentStatus)
+		medicalRecordGoup.POST("", middleware.JwtAuth("DOCTOR"), handler.createMedicalRecord)
+		medicalRecordGoup.GET("", middleware.JwtAuth("ADMIN"), handler.getMedicalRecords)
+		medicalRecordGoup.GET("/:id", middleware.JwtAuth("ADMIN"), handler.getMedicalRecordByID)
+		medicalRecordGoup.PUT("/:id", middleware.JwtAuth("ADMIN"), handler.updatePaymentStatus)
 	}
 }
 

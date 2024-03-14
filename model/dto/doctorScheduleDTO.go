@@ -11,14 +11,14 @@ type (
 	}
 
 	DoctorScheduleDetail struct {
-		DayOfWeek int    `json:"day_of_week" validate:"required,lt=6,gt=0"` // dow is day of week, represented by integer, start from 0.Sunday--7.Saturday
-		StartAt   string `json:"start_at" validate:"required"`
-		EndAt     string `json:"end_at" validate:"required"`
+		ScheduleDate string `json:"schedule_date" validate:"required"`
+		StartAt      int    `json:"start_at" validate:"required"`
+		EndAt        int    `json:"end_at" validate:"required,gtfield=StartAt"`
 	}
 
 	UpdateSchedule struct {
-		DayOfWeek int    `json:"day_of_week" validate:"lt=6,gt=0"`
-		StartAt   string `json:"start_at"`
-		EndAt     string `json:"end_at"`
+		ScheduleDate string `json:"schedule_date"`
+		StartAt      int    `json:"start_at"`
+		EndAt        int    `json:"end_at"`
 	}
 )
