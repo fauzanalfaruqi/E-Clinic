@@ -41,6 +41,15 @@ CREATE TABLE actions (
   deleted_at TIMESTAMP
 );
 
+CREATE TABLE mst_schedule_time(
+  id INT PRIMARY KEY,
+  start_at TIME NOT NULL,
+  end_at TIME NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP,
+  deleted_at TIMESTAMP
+);
+
 CREATE TABLE doctor_schedules (
   id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
   doctor_id uuid NOT NULL REFERENCES users (id),
@@ -93,16 +102,6 @@ CREATE TABLE medical_record_action_details (
   medical_record_id uuid NOT NULL REFERENCES medical_records (id),
   action_id uuid NOT NULL REFERENCES actions (id),
   action_price int,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP,
-  deleted_at TIMESTAMP
-);
-
-
-CREATE TABLE mst_schedule_time(
-  id INT PRIMARY KEY,
-  start_at TIME NOT NULL,
-  end_at TIME NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP,
   deleted_at TIMESTAMP

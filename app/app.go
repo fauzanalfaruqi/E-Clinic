@@ -15,6 +15,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/logger"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/rs/zerolog/pkgerrors"
@@ -23,9 +24,9 @@ import (
 func initEnv() (dto.ConfigData, error) {
 	var configData dto.ConfigData
 
-	// if err := godotenv.Load(); err != nil {
-	// 	return dto.ConfigData{}, err
-	// }
+	if err := godotenv.Load(); err != nil {
+		return dto.ConfigData{}, err
+	}
 
 	if port := os.Getenv("PORT"); port != "" {
 		configData.AppConfig.Port = port
