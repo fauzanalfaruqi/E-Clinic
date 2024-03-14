@@ -8,14 +8,12 @@ type (
 	CreateBooking struct {
 		DoctorScheduleID uuid.UUID `json:"doctor_schedule_id" validate:"required"`
 		PatientID        uuid.UUID `json:"patient_id" validate:"required"`
-		BookingDate      string    `json:"booking_date" validate:"required"`
 		MstScheduleID    int       `json:"mst_schedule_id" validate:"required"` //refer to mst_schedule id
 		Complaint        string    `json:"complaint" validate:"required"`
 	}
 
 	UpdateBookingSchedule struct {
 		DoctorScheduleID uuid.UUID `json:"doctor_schedule_id"`
-		BookingDate      string    `json:"booking_date"`
 		MstScheduleID    int       `json:"mst_schedule_id"` //refer to mst_schedule id
 		// ScheduleID uuid.UUID `json:"schedule_id" validate:"required"`
 		// PatientID  uuid.UUID `json:"patient_id" validate:"required"`

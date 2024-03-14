@@ -38,11 +38,10 @@ func InitRoute(v1Group *gin.RouterGroup, db *sql.DB) {
 	medicineDelivery.NewMedicineDelivery(v1Group, medicineUC)
 	
 	scheduleRepo := doctorScheduleRepository.NewDoctorScheduleRepo(db)
-	scheduleUC := doctorScheduleUsecase.NewDoctorScheduleUsecase(scheduleRepo)
-	doctorScheduleDelivery.NewDoctorScheduleDelivery(v1Group, scheduleUC)
-
 	bookingRepo := bookingRepository.NewBookingRepository(db)
+	scheduleUC := doctorScheduleUsecase.NewDoctorScheduleUsecase(scheduleRepo, bookingRepo)
 	bookingUC := bookingUsecase.NewBookingUsecase(bookingRepo, scheduleRepo)
+	doctorScheduleDelivery.NewDoctorScheduleDelivery(v1Group, scheduleUC)
 	bookingDelivery.NewBookingDelivery(v1Group, bookingUC)
 
 	medicalRecordRepository := medicalRecordRepository.NewMedicalRecordRepository(db)
