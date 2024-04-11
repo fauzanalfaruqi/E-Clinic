@@ -124,7 +124,6 @@ Avenger Clinic is a backend clinic management system built using Go. This projec
   To populate the database with initial/necessary data, you can copy provided dml sample data query which can be found [here](./DMLFeatSched.sql). The query is looks like this:
 
   ```sql
-  -- Sample dml
   INSERT INTO users(id, username, password, role, specialization, created_at, updated_at) 
   VALUES
       ('31b24cdd-c633-4d2d-9044-718378eb3929', 'admin', '$2a$10$bmiD3Nuo3R7CXHTiQcsLFeEhGhNkx6vLfcN50gKgNu6/v.qlWDSZm', 'ADMIN', NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
@@ -165,7 +164,7 @@ Avenger Clinic is a backend clinic management system built using Go. This projec
 
   Create `.env` file in the root directory of this project. Copy and modify env settings below into your created `.env` file:
 
-  ```json
+  ```
   DB_HOST=localhost
   DB_PORT=5432
   DB_USER=postgres
@@ -248,7 +247,7 @@ Avenger Clinic is a backend clinic management system built using Go. This projec
   | GET    | Get soft delete medicine record           | /api/v1/medicines/trash         | Admin |
   | PUT    | Restore soft deleted medicine record      | /api/v1/medicines/{:id}/restore | Admin |
 
-  - ### Action
+- ### Action
 
   | Method | Description                             | Endpoint                      | Role  |
   | ------ | --------------------------------------- | ----------------------------- | ----- |
