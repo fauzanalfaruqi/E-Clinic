@@ -119,7 +119,7 @@ Avenger Clinic is a backend clinic management system built using Go. This projec
   );
   ```
 
-- Sample Data
+- ### Sample Data
 
   To populate the database with initial/necessary data, you can copy provided dml sample data query which can be found [here](./DMLFeatSched.sql). The query is looks like this:
 
@@ -161,7 +161,7 @@ Avenger Clinic is a backend clinic management system built using Go. This projec
       ('74d93144-6f2e-4bbc-9f89-973c62d3ac54','67b65471-eb1f-46ec-a043-959a5cc85778', 2,'sakit kepala dihantam realita', 'CANCELED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
   ```
   
-- Create `env` File
+- ### Create `env` File
 
   Create `.env` file in the root directory of this project. Copy and modify env settings below into your created `.env` file:
 
@@ -179,7 +179,7 @@ Avenger Clinic is a backend clinic management system built using Go. This projec
   LOG_MODE=1
   ```
 
-- Run the program
+- ### Run the program
 
   To run the program, simply excecute this command below on your terminal:
 
