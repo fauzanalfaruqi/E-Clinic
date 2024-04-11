@@ -195,11 +195,11 @@ Avenger Clinic is a backend clinic management system built using Go. This projec
   | ------ | ----------------------------------------------- | :--------------------------- | ---------------------- |
   | POST   | Insert new user for role *Admin* and *Doctor*   | /api/v1/users                | Admin                  |
   | POST   | Insert new user with role as *Patient*          | /api/v1/users/register       | Public                 |
-  | POST   | Login users                                     | /api/v1/users/login          | Public                 |
-  | GET    | Get all users fields                            | /api/v1/users/getall         | Admin                  |
-  | GET    | Get user fields based on the given id           | /api/v1/users/{:id}          | Admin, Doctor, Patient |
+  | POST   | Login user                                      | /api/v1/users/login          | Public                 |
+  | GET    | Get all user records                            | /api/v1/users/getall         | Admin                  |
+  | GET    | Get user record based on the given id           | /api/v1/users/{:id}          | Admin, Doctor, Patient |
   | GET    | Get soft deleted users                          | /api/v1/users/trash          | Admin                  |
-  | PUT    | Update user fields                              | /api/v1/users/{:id}          | Admin, Doctor, Aptient |
+  | PUT    | Update user record                              | /api/v1/users/{:id}          | Admin, Doctor, Aptient |
   | PUT    | Update password                                 | /api/v1/users/{:id}/password | Admin, Doctor, Patient |
   | PUT    | Restore soft deleted user based on the given id | /api/v1/users/{:id}/restore  | Admin                  |
   | DELETE | Hard delete user based on the given id          | /api/v1/users/{:id}          | Admin                  |
