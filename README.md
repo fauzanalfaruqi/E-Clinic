@@ -130,7 +130,7 @@ Avenger Clinic is a backend clinic management system built using Go. This projec
       ('31b24cdd-c633-4d2d-9044-718378eb3929', 'admin', '$2a$10$bmiD3Nuo3R7CXHTiQcsLFeEhGhNkx6vLfcN50gKgNu6/v.qlWDSZm', 'ADMIN', NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
       ('67b65471-eb1f-46ec-a043-959a5cc85778', 'Budi', '$2a$10$bmiD3Nuo3R7CXHTiQcsLFeEhGhNkx6vLfcN50gKgNu6/v.qlWDSZm', 'PATIENT', NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
       ('5bc18dd0-58cb-4612-8dc3-5fc2419b7f29', 'Joko', '$2a$10$bmiD3Nuo3R7CXHTiQcsLFeEhGhNkx6vLfcN50gKgNu6/v.qlWDSZm', 'DOCTOR', 'Ortopedi', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
-
+  
   INSERT INTO mst_schedule_time(id, start_at, end_at, created_at, updated_at) 
   VALUES
       (1, '08:00:30', '08:30:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
@@ -191,74 +191,74 @@ Avenger Clinic is a backend clinic management system built using Go. This projec
 
 - ### Users
 
-  | Method | Description                                     | Endpoint                     | Role                   | Filter |
-  | ------ | ----------------------------------------------- | :--------------------------- | ---------------------- | ------ |
-  | POST   | Insert new user for role *Admin* and *Doctor*   | /api/v1/users                | Admin                  | -      |
-  | POST   | Insert new user with role as *Patient*          | /api/v1/users/register       | Public                 | -      |
-  | POST   | Login users                                     | /api/v1/users/login          | Public                 | -      |
-  | GET    | Get all users fields                            | /api/v1/users/getall         | Admin                  |        |
-  | GET    | Get user fields based on the given id           | /api/v1/users/{:id}          | Admin, Doctor, Patient |        |
-  | GET    | Get soft deleted users                          | /api/v1/users/trash          | Admin                  |        |
-  | PUT    | Update user fields                              | /api/v1/users/{:id}          | Admin, Doctor, Aptient |        |
-  | PUT    | Update password                                 | /api/v1/users/{:id}/password | Admin, Doctor, Patient |        |
-  | PUT    | Restore soft deleted user based on the given id | /api/v1/users/{:id}/restore  | Admin                  |        |
-  | DELETE | Hard delete user based on the given id          | /api/v1/users/{:id}          | Admin                  |        |
-  | DELETE | Soft delete user based on the given id          | /api/v1/users/{:id}/trash    | Admin                  |        |
+  | Method | Description                                     | Endpoint                     | Role                   |
+  | ------ | ----------------------------------------------- | :--------------------------- | ---------------------- |
+  | POST   | Insert new user for role *Admin* and *Doctor*   | /api/v1/users                | Admin                  |
+  | POST   | Insert new user with role as *Patient*          | /api/v1/users/register       | Public                 |
+  | POST   | Login user                                      | /api/v1/users/login          | Public                 |
+  | GET    | Get all user records                            | /api/v1/users/getall         | Admin                  |
+  | GET    | Get user record based on the given id           | /api/v1/users/{:id}          | Admin, Doctor, Patient |
+  | GET    | Get soft deleted users                          | /api/v1/users/trash          | Admin                  |
+  | PUT    | Update user record                              | /api/v1/users/{:id}          | Admin, Doctor, Aptient |
+  | PUT    | Update password                                 | /api/v1/users/{:id}/password | Admin, Doctor, Patient |
+  | PUT    | Restore soft deleted user based on the given id | /api/v1/users/{:id}/restore  | Admin                  |
+  | DELETE | Hard delete user based on the given id          | /api/v1/users/{:id}          | Admin                  |
+  | DELETE | Soft delete user based on the given id          | /api/v1/users/{:id}/trash    | Admin                  |
 
 - ### Booking
 
-  | Methods | Description                              | Endpoint                     | Role                   | Filter |
-  | ------- | ---------------------------------------- | ---------------------------- | ---------------------- | ------ |
-  | POST    | Create new booking record                | /api/v1/booking              | Admin, Patient         |        |
-  | GET     | Get all booking fields                   | /api/v1/booking              | Admin, Doctor          |        |
-  | GET     | Get booking fields based on the given id | /api/v1/booking/{:id}        | Admin, Doctor, Patient |        |
-  | PUT     | Update booking schedule data             | /api/v1/booking/{:id}        | Admin, Patient         |        |
-  | PUT     | Update booking  to mark as done          | /api/v1/booking/done/{:id}   | Admin, Doctor, Patient |        |
-  | PUT     | Cancel booking                           | /api/v1/booking/cancel/{:id} | Admin, Patient         |        |
+  | Methods | Description                              | Endpoint                     | Role                   |
+  | ------- | ---------------------------------------- | ---------------------------- | ---------------------- |
+  | POST    | Create new booking record                | /api/v1/booking              | Admin, Patient         |
+  | GET     | Get all booking fields                   | /api/v1/booking              | Admin, Doctor          |
+  | GET     | Get booking fields based on the given id | /api/v1/booking/{:id}        | Admin, Doctor, Patient |
+  | PUT     | Update booking schedule data             | /api/v1/booking/{:id}        | Admin, Patient         |
+  | PUT     | Update booking  to mark as done          | /api/v1/booking/done/{:id}   | Admin, Doctor, Patient |
+  | PUT     | Cancel booking                           | /api/v1/booking/cancel/{:id} | Admin, Patient         |
 
 - ### Doctor Schedule
 
-  | Method | Description                                      | Endpoint                      | Role                   | Filter |
-  | ------ | ------------------------------------------------ | ----------------------------- | ---------------------- | ------ |
-  | POST   | Insert new doctor schedule record                | /api/v1/doctor-schedule       | Admin, Doctor          |        |
-  | GET    | Get all doctor schedule records                  | /api/v1/doctor-schedule       | Admin, Patient         |        |
-  | GET    | Get doctor schedule record based on the given id | /api/v1/doctor-schedule/{:id} | Admin, Doctor, Patient |        |
-  | PUT    | Update doctor schedule record                    | /api/v1/doctor-schedule/{:id} | Admin, Doctor          |        |
-  | DELETE | Soft delete doctor schedule record               | /api/v1/doctor-schedule       | Admin, Doctor          |        |
-  | PUT    | Restore soft deleted doctor schedule record      | /api/v1/doctor-schedule/{:id} | Admin, Doctor          |        |
+  | Method | Description                                      | Endpoint                      | Role                   |
+  | ------ | ------------------------------------------------ | ----------------------------- | ---------------------- |
+  | POST   | Insert new doctor schedule record                | /api/v1/doctor-schedule       | Admin, Doctor          |
+  | GET    | Get all doctor schedule records                  | /api/v1/doctor-schedule       | Admin, Patient         |
+  | GET    | Get doctor schedule record based on the given id | /api/v1/doctor-schedule/{:id} | Admin, Doctor, Patient |
+  | PUT    | Update doctor schedule record                    | /api/v1/doctor-schedule/{:id} | Admin, Doctor          |
+  | DELETE | Soft delete doctor schedule record               | /api/v1/doctor-schedule       | Admin, Doctor          |
+  | PUT    | Restore soft deleted doctor schedule record      | /api/v1/doctor-schedule/{:id} | Admin, Doctor          |
 
 - ### Medical Record
 
-  | Method | Description                                     | Endpoint                     | Role          | Filter |
-  | ------ | ----------------------------------------------- | ---------------------------- | ------------- | ------ |
-  | POST   | Insert new medical record fields                | /api/v1/medical-record       | Admin, Doctor |        |
-  | GET    | Get all medical record fields                   | /api/v1/medical-record       | Admin         |        |
-  | GET    | Get medical record fields based on the given id | /api/v1/medical-record/{:id} | Admin         |        |
-  | PUT    | Update payment status to done                   | /api/v1/medical-record/{:id} | Admin         |        |
+  | Method | Description                                     | Endpoint                     | Role          |
+  | ------ | ----------------------------------------------- | ---------------------------- | ------------- |
+  | POST   | Insert new medical record fields                | /api/v1/medical-record       | Admin, Doctor |
+  | GET    | Get all medical record fields                   | /api/v1/medical-record       | Admin         |
+  | GET    | Get medical record fields based on the given id | /api/v1/medical-record/{:id} | Admin         |
+  | PUT    | Update payment status to done                   | /api/v1/medical-record/{:id} | Admin         |
 
 - ### Medicine
 
-  | Method | Description                               | Endpoint                        | Role  | Filter |
-  | ------ | ----------------------------------------- | ------------------------------- | ----- | ------ |
-  | POST   | Inser new medicine record                 | /api/v1/medicines               | Admin |        |
-  | GET    | Get all medicine records                  | /api/v1/medicines               | Admin |        |
-  | GET    | Get medicine record based on the given id | /api/v1/medicines/{:id}         | Admin |        |
-  | PUT    | Update medicine record                    | /api/v1/medicines/{:id}         | Admin |        |
-  | DELETE | Soft delete medicine record               | /api/v1/medicines/{:id}         | Admin |        |
-  | GET    | Get soft delete medicine record           | /api/v1/medicines/trash         | Admin |        |
-  | PUT    | Restore soft deleted medicine record      | /api/v1/medicines/{:id}/restore | Admin |        |
+  | Method | Description                               | Endpoint                        | Role  |
+  | ------ | ----------------------------------------- | ------------------------------- | ----- |
+  | POST   | Inser new medicine record                 | /api/v1/medicines               | Admin |
+  | GET    | Get all medicine records                  | /api/v1/medicines               | Admin |
+  | GET    | Get medicine record based on the given id | /api/v1/medicines/{:id}         | Admin |
+  | PUT    | Update medicine record                    | /api/v1/medicines/{:id}         | Admin |
+  | DELETE | Soft delete medicine record               | /api/v1/medicines/{:id}         | Admin |
+  | GET    | Get soft delete medicine record           | /api/v1/medicines/trash         | Admin |
+  | PUT    | Restore soft deleted medicine record      | /api/v1/medicines/{:id}/restore | Admin |
 
   - ### Action
 
-  | Method | Description                               | Endpoint                        | Role  | Filter |
-  | ------ | ----------------------------------------- | ------------------------------- | ----- | ------ |
-  | POST   | Inser new action record                   | /api/v1/actions                 | Admin |        |
-  | GET    | Get all action records                    | /api/v1/actions                 | Admin |        |
-  | GET    | Get action record based on the given id   | /api/v1/actions/{:id}           | Admin |        |
-  | PUT    | Update action record                      | /api/v1/actions/{:id}           | Admin |        |
-  | DELETE | Soft delete action record                 | /api/v1/actions/{:id}           | Admin |        |
-  | GET    | Get soft delete action record             | /api/v1/actions/trash           | Admin |        |
-  | PUT    | Restore soft deleted action record        | /api/v1/actions/{:id}/restore   | Admin |        |
+  | Method | Description                             | Endpoint                      | Role  |
+  | ------ | --------------------------------------- | ----------------------------- | ----- |
+  | POST   | Inser new action record                 | /api/v1/actions               | Admin |
+  | GET    | Get all action records                  | /api/v1/actions               | Admin |
+  | GET    | Get action record based on the given id | /api/v1/actions/{:id}         | Admin |
+  | PUT    | Update action record                    | /api/v1/actions/{:id}         | Admin |
+  | DELETE | Soft delete action record               | /api/v1/actions/{:id}         | Admin |
+  | GET    | Get soft delete action record           | /api/v1/actions/trash         | Admin |
+  | PUT    | Restore soft deleted action record      | /api/v1/actions/{:id}/restore | Admin |
 
 ## Depencecies
 
