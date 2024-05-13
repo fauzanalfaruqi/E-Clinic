@@ -1,6 +1,6 @@
 # Avenger Clinic - Golang Backend Clinic Management System
 
-Avenger Clinic is a backend clinic management system built using Go. This project was created during final project of the Go bootcamp at [Enigmacamp](https://enigmacamp.com/). Implements clean architecture, the program can perform CRUD operations and Authorization using JWT.
+Avenger Clinic is a backend clinic management system built using Go. This project was created during final project of the Go bootcamp. Implements clean architecture, the program can perform CRUD operations and Authorization using JWT.
 
 ## Get Started
 
