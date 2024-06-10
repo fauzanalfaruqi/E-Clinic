@@ -1,6 +1,6 @@
-# Avenger Clinic - Golang Backend Clinic Management System
+# E-Clinic - Go Clinic Management System API
 
-Avenger Clinic is a backend clinic management system built using Go. This project was created during final project of the Go bootcamp. Implements clean architecture, the program can perform CRUD operations and Authorization using JWT.
+E-Clinic is a clinic management system API built using Go. This project was created during final project of the Go bootcamp. Implements clean architecture, the program can perform CRUD operations and Authorization using JWT.
 
 ## Get Started
 
